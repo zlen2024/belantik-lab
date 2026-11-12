@@ -19,18 +19,34 @@ if __name__ == "__main__":
     parser.add_argument("--full", action="store_true", help="Use the frozen 400+100 update budget for one seed.")
     parser.add_argument("--seed", type=int, default=17, help="Model initialisation seed; protocol data stay fixed.")
     parser.add_argument("--evaluate-test", action="store_true", help="Open the held-out test split after the selected checkpoint is fixed.")
+    parser.add_argument("--random-baseline", action="store_true", help="Evaluate the untrained initialisation control with the same readout.")
     arguments = parser.parse_args()
-    config = (
-        ExactTrainingConfig(seed=arguments.seed)
-        if arguments.full
-        else ExactTrainingConfig(seed=arguments.seed, lexical_updates=20, joint_updates=10)
-    )
+    if arguments.random_baseline:
+        config = ExactTrainingConfig(seed=arguments.seed, lexical_updates=0, joint_updates=0)
+    elif arguments.full:
+        config = ExactTrainingConfig(seed=arguments.seed)
+    else:
+        config = ExactTrainingConfig(seed=arguments.seed, lexical_updates=20, joint_updates=10)
     raw, metrics = train_smoke(config)
+    if arguments.random_baseline:
+        metrics["training.stage"] = "untrained random-initialisation control"
     if arguments.evaluate_test:
         metrics.update(evaluate_checkpoint(raw, split="test"))
-    stage = "one-seed exact-gradient Ising frozen-budget precheck" if arguments.full else "one-seed exact-gradient Ising smoke"
+    stage = (
+        "untrained Ising random-initialisation control"
+        if arguments.random_baseline
+        else "one-seed exact-gradient Ising frozen-budget precheck"
+        if arguments.full
+        else "one-seed exact-gradient Ising smoke"
+    )
     artifact = {"kind": f"{stage}; not sampler training or hardware", "config": config.__dict__, "metrics": metrics}
-    suffix = f"ising-exact-training-seed{arguments.seed}.json" if arguments.full else f"ising-exact-training-smoke-seed{arguments.seed}.json"
+    suffix = (
+        f"ising-random-seed{arguments.seed}.json"
+        if arguments.random_baseline
+        else f"ising-exact-training-seed{arguments.seed}.json"
+        if arguments.full
+        else f"ising-exact-training-smoke-seed{arguments.seed}.json"
+    )
     target = PROJECT_ROOT / "experiments" / "runs" / suffix
     np.savez(target.with_suffix(".npz"), **raw)
     target.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
