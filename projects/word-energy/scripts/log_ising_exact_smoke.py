@@ -21,10 +21,13 @@ if __name__ == "__main__":
     parser.add_argument("--full", action="store_true", help="Log the frozen-budget one-seed precheck artifact.")
     parser.add_argument("--seed", type=int, default=17, help="Model initialisation seed to log.")
     parser.add_argument("--random-baseline", action="store_true", help="Log the untrained initialisation control artifact.")
+    parser.add_argument("--permuted-lexical-control", action="store_true", help="Log the frozen lexical-context permutation control.")
     arguments = parser.parse_args()
     suffix = (
         f"ising-random-seed{arguments.seed}.json"
         if arguments.random_baseline
+        else f"ising-permuted-lexical-seed{arguments.seed}.json"
+        if arguments.permuted_lexical_control
         else f"ising-exact-training-seed{arguments.seed}.json"
         if arguments.full
         else f"ising-exact-training-smoke-seed{arguments.seed}.json"
@@ -33,7 +36,7 @@ if __name__ == "__main__":
     result = json.loads(artifact.read_text(encoding="utf-8"))
     mlflow.set_tracking_uri(tracking_uri())
     mlflow.set_experiment("word-energy-exact-training")
-    stage = "random-control" if arguments.random_baseline else "precheck" if arguments.full else "smoke"
+    stage = "random-control" if arguments.random_baseline else "permuted-lexical-control" if arguments.permuted_lexical_control else "precheck" if arguments.full else "smoke"
     run_name = f"ising-exact-ranking-{stage}-seed{arguments.seed}"
     with mlflow.start_run(run_name=run_name) as run:
         contract = RunContract(

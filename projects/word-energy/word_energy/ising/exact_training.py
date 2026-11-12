@@ -40,6 +40,7 @@ class ExactTrainingConfig:
     joint_lr: float = 0.003
     clip_norm: float = 5.0
     validation_every: int = 20
+    permuted_lexical_contexts: bool = False
 
 
 def token_index() -> dict[str, int]:
@@ -196,6 +197,8 @@ def prepare_data() -> dict[str, Any]:
     validation_negatives = _negative_table(validation_pairs, probabilities, valid_pairs, seed=7070)
     lexical_schedule = np.random.default_rng(4040).choice(len(train_pairs), size=(400, 64), replace=True).astype(np.int32)
     joint_schedule = np.random.default_rng(5050).choice(len(rows["train"]), size=(100, 4), replace=True).astype(np.int32)
+    permuted_train_pairs = train_pairs.copy()
+    permuted_train_pairs[:, 1] = np.random.default_rng(8080).permutation(permuted_train_pairs[:, 1])
     result: dict[str, Any] = {
         "train_windows": rows["train"],
         "validation_windows": rows["validation"],
@@ -204,6 +207,7 @@ def prepare_data() -> dict[str, Any]:
         "validation_families": families["validation"],
         "test_families": families["test"],
         "train_pairs": train_pairs,
+        "permuted_train_pairs": permuted_train_pairs,
         "validation_pairs": validation_pairs,
         "train_negatives": train_negatives,
         "validation_negatives": validation_negatives,
@@ -216,7 +220,7 @@ def prepare_data() -> dict[str, Any]:
     frozen = {
         name: value.tolist() if isinstance(value, np.ndarray) else value
         for name, value in result.items()
-        if name != "ids"
+        if name not in {"ids", "permuted_train_pairs"}
     }
     result["protocol_sha256"] = _sha256(frozen)
     result["schedule_sha256"] = _sha256(
@@ -380,7 +384,7 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[di
     }
     lexical_optimizer = optax.chain(optax.clip_by_global_norm(config.clip_norm), optax.adam(config.lexical_lr))
     lexical_state = lexical_optimizer.init(raw)
-    train_pairs = jnp.asarray(data["train_pairs"])
+    train_pairs = jnp.asarray(data["permuted_train_pairs"] if config.permuted_lexical_contexts else data["train_pairs"])
     train_negatives = jnp.asarray(data["train_negatives"])
     validation_pairs = jnp.asarray(data["validation_pairs"])
     validation_negatives = jnp.asarray(data["validation_negatives"])
@@ -468,7 +472,13 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[di
         "validation.joint_ranking_loss": joint_best[1] if joint_best else float("nan"),
         "interaction.weight_0": float(params["interaction"][0]),
         "interaction.weight_1": float(params["interaction"][1]),
-        "training.stage": "frozen-budget precheck" if (config.lexical_updates, config.joint_updates) == (400, 100) else "short smoke",
+        "training.stage": (
+            "permuted-lexical-context control"
+            if config.permuted_lexical_contexts
+            else "frozen-budget precheck"
+            if (config.lexical_updates, config.joint_updates) == (400, 100)
+            else "short smoke"
+        ),
     }
     return final_raw, metrics
 

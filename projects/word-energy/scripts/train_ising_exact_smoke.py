@@ -20,11 +20,16 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=17, help="Model initialisation seed; protocol data stay fixed.")
     parser.add_argument("--evaluate-test", action="store_true", help="Open the held-out test split after the selected checkpoint is fixed.")
     parser.add_argument("--random-baseline", action="store_true", help="Evaluate the untrained initialisation control with the same readout.")
+    parser.add_argument("--permuted-lexical-control", action="store_true", help="Permute lexical positive contexts with frozen RNG 8080.")
     arguments = parser.parse_args()
+    if arguments.permuted_lexical_control and not arguments.full:
+        parser.error("--permuted-lexical-control requires --full")
+    if arguments.permuted_lexical_control and arguments.random_baseline:
+        parser.error("choose either --random-baseline or --permuted-lexical-control")
     if arguments.random_baseline:
         config = ExactTrainingConfig(seed=arguments.seed, lexical_updates=0, joint_updates=0)
     elif arguments.full:
-        config = ExactTrainingConfig(seed=arguments.seed)
+        config = ExactTrainingConfig(seed=arguments.seed, permuted_lexical_contexts=arguments.permuted_lexical_control)
     else:
         config = ExactTrainingConfig(seed=arguments.seed, lexical_updates=20, joint_updates=10)
     raw, metrics = train_smoke(config)
@@ -35,6 +40,8 @@ if __name__ == "__main__":
     stage = (
         "untrained Ising random-initialisation control"
         if arguments.random_baseline
+        else "one-seed Ising frozen lexical-context permutation control"
+        if arguments.permuted_lexical_control
         else "one-seed exact-gradient Ising frozen-budget precheck"
         if arguments.full
         else "one-seed exact-gradient Ising smoke"
@@ -43,6 +50,8 @@ if __name__ == "__main__":
     suffix = (
         f"ising-random-seed{arguments.seed}.json"
         if arguments.random_baseline
+        else f"ising-permuted-lexical-seed{arguments.seed}.json"
+        if arguments.permuted_lexical_control
         else f"ising-exact-training-seed{arguments.seed}.json"
         if arguments.full
         else f"ising-exact-training-smoke-seed{arguments.seed}.json"
