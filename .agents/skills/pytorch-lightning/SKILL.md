@@ -23,6 +23,10 @@ Resolve bundled scripts relative to this installed skill directory, not upstream
 
 Use this tool only when the project uses it or the request benefits from it. Preserve existing training frameworks and tracking systems. Training examples are illustrations, not a reason to launch jobs, download datasets, start servers or deploy models during skill installation. Follow the local research skill's train/validation/test separation.
 
+### Thermodynamic-computing role
+
+Use Lightning as the normal-computing trainer or baseline controller, not as evidence of thermodynamic hardware execution. For an EBM destined for THRML/Torx, make the energy convention, variable encoding, `β`/temperature, sampler, and readout explicit in the module/config; preserve a small classical fixture before any simulator comparison. Log the execution tier and backend in MLflow. Route Ising/block-Gibbs translation to `thrml`, circuit translation to `torx`, and EBM loss/sampler choices to `ebm-training`.
+
 
 ## Quick start
 

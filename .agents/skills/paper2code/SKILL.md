@@ -15,6 +15,10 @@ Resolve bundled scripts relative to this installed skill directory, not upstream
 
 Apply all phase checks to the user-requested component. A request for one algorithm does not require implementing every method or reproducing every table in the whole paper. Prefer the already inspected LaTeX/HTML/PDF evidence; retain intermediate YAML and distinguish smoke tests from reproduction. Explain the plan and results in BM with English technical terms.
 
+### Thermodynamic-computing implementation boundary
+
+For an EBM or probabilistic-hardware paper, first make the mathematical contract executable on a small classical fixture: energy sign, variable domain, `β`/temperature, conditional update rule, graph topology, and readout. Then treat any THRML/Torx version as a second implementation and compare the same observable against the fixture within sampling uncertainty. Choose `thrml` for Ising/Boltzmann block-Gibbs models and `torx` for stochastic circuits/DFGs; use `ebm-training` for the objective and evaluation. Label code and results as `classical`, `thrml_simulator`, `torx_simulator`, or `hardware`; never label a simulator run as hardware execution. When an experiment is run, log the mapping and limitations to MLflow.
+
 
 ## 개요
 

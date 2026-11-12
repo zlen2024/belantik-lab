@@ -14,7 +14,7 @@
         ".gitmodules": "0949e7c0b594661dc4b4e792be3ff817cd5d54b4f4955f966ea539585013c62d",
         "LICENSE": "c6cc1ebe68b146d06c0f31839c5f7d6141ad3f0b3f238ca6d9bafbd8fcb298fa",
         "README.md": "06e46beb13819239ed192234727c584d763e3e2e364e198d1964ac0bf43394e5",
-        "SKILL.md": "d22dd7ba50311db5dd8e1f46af73d978ea1bec63feee566c5a86b222e88d82c8",
+        "SKILL.md": "704bb502ff33016bea9cc43e1277d7e4fa659139cad8b8f8177671a3cb6dc4df",
         "UPSTREAM.md": "0efa05e8a6bff9f141124f83e7402bb565b16320f4b311aa24eaf9490af43be0",
         "assets/note-template.html": "9d2e6b55c2f3094989c39bad222361e9f0c3ee6a9f4d3d03ad2fea11a5ecf055",
         "evals/evals.json": "74728e1f53aed5ad90cf1483a39dbf92fba5ff21b23c74a1c7e6f25b8eaf7638",
@@ -36,7 +36,7 @@
       "commit": "db1b17f5ade21cafb6c7a2140367863c6f17085f",
       "upstream_skill_sha256": "303993f58309dba51aaf95bd4256a8a439a5bc76adda7813be52d91cfda4d2e3",
       "files_sha256": {
-        "SKILL.md": "f5e7e3f6ff4f452276d3ee1af63b4fd4b49ad5d27d76b7935f16a0fc7ce4d059",
+        "SKILL.md": "2bdb6c5a62365b6da931b56de3bfcf120e2b7a8235e93782e2b56608413bfd23",
         "agents/openai.yaml": "3c65206df9e188df111fa31148e816b6e0466c1b743daf312f551ec5a2379cbd",
         "references/architecture.md": "2810ef41088bd727e8ab5ff829aa3a0e3d70de4eccf4bd8d3f9686079c25db30",
         "references/deep-analysis.md": "5bbd5c32dd42dcd379e3cfba9d237ad7dc0d0bad80ef6cd201862862ff91195a",
@@ -95,7 +95,7 @@
         "05_reference_search.md": "307e8a40019c839e917b1ad1cdc104451f3fac46c6d9fe9fe93f5d93cf998334",
         "06_memory_management.md": "572f84941a0e39a68b0dedfec9ab526a9a4f6bc9a61b9675dd0ddd68e2e04ce9",
         "README.md": "fe83e5028761f48d7cab9c771a0f4d2b3b0dd5a3f0f475fd10583fed5aeb9cfc",
-        "SKILL.md": "3cbe7f0fd0c9025f2631810ca052c56d6089380aed941634b9a10f6858cf7638"
+        "SKILL.md": "da8ed8fa1e243b184a314034b4ee93351aeb5fbb63e9b27621fc9503304bbd9c"
       },
       "adaptations": "Normalized metadata, local paths/language/scope integration; see installed SKILL.md. Upstream snapshot retained in .tmp/upstream-research-skills."
     },
@@ -106,7 +106,7 @@
       "commit": "773a52944ba4747a18bd4ae9ade53fff041adcbc",
       "upstream_skill_sha256": "b7ca0d7a6e905da85a8b494d3fe398ac78eaa278854f67b50a34f2b37a9a2b78",
       "files_sha256": {
-        "SKILL.md": "d95308762931835116536e123f4b70eeda31db53790031df36ba5be625286a1f",
+        "SKILL.md": "8246cd633d9c6c4beeca20cad0ec9693c9d64dd6ab0936d562a0e2bcedc7d223",
         "references/agent-continuity.md": "e606e0ce33417754e3e60581862769146dfe53c5a2586cea3a7dbd294eed62bc",
         "references/progress-reporting.md": "f57fbd191618f3911b99fa0a68a038553e222201857b4f0bd5bd32cb524148b5",
         "references/skill-routing.md": "a64f3877b4c0515ddcd5401a9eb4683824f4f9c0e9c010cee360a5409bd4e734",
@@ -124,7 +124,7 @@
       "commit": "773a52944ba4747a18bd4ae9ade53fff041adcbc",
       "upstream_skill_sha256": "7788f93b6324f8d62d0d579a572164d303704b59fc7fefe12497afb75856c453",
       "files_sha256": {
-        "SKILL.md": "a5933a4d719ee237adb38c1f49e3a9eebabcf90863e33db511eff6736b135ab3",
+        "SKILL.md": "21a65b64ea3c5902dc705ed5a14a794f30559b3c0f4310b67af6c6dea0f5659e",
         "references/callbacks.md": "2940b978bdec21b6f8da54c72d1858015e5ba290f9b05f1a659d67c25860e259",
         "references/distributed.md": "c7d183b74a48550541658ace014c6ef8fa15f2c625075369e4ad644ad950ecdf",
         "references/hyperparameter-tuning.md": "fb733b9a324d4bb0c941c70b9bb01c59785d53a1827b48db5274520e1eb66e16"
@@ -138,7 +138,7 @@
       "commit": "773a52944ba4747a18bd4ae9ade53fff041adcbc",
       "upstream_skill_sha256": "36d2581f7d8beb8b27f66bbef5c94df7e9604b917c3aa15e4183a48a2b1f3f96",
       "files_sha256": {
-        "SKILL.md": "52c5247aaab98b716c3aa4ce94824dba57f9edd74b1c5309aac69efd370b886e",
+        "SKILL.md": "0ede34cac4a1f88be3068429443096403a3be68abbb1c8be3478fa6c5aeed4c2",
         "references/deployment.md": "e3fbee780f5b8dddedadd53bbe3db490eb2611bea920ea52849e10262841539d",
         "references/model-registry.md": "fdfdfb609e1fa3123c5948ecce3275eef8ce0b9437ca2e957bb22a6eb29372eb",
         "references/tracking.md": "e2b63991f10bf208d8444791c62b0a83c049c37da0c5722e4124805dfb1ba405"
@@ -152,7 +152,7 @@
       "commit": "773a52944ba4747a18bd4ae9ade53fff041adcbc",
       "upstream_skill_sha256": "717c4b05f88bbc888d54cc51fa390ae225d687b3b86fb616e36cc7fc26108020",
       "files_sha256": {
-        "SKILL.md": "4b432eed3e5698fecbb5582494215d48b313364836bc6f03de3476c5ca21398f",
+        "SKILL.md": "36177ca8fe28c7d0c319408420b2ab01c852e6695169974cee18c62633b91497",
         "references/integrations.md": "a647d47e9589eb7abbbcb494fc2c8f21c2b8cab1fee3a59e30cab4b81014cd4a",
         "references/profiling.md": "1471302d589c00c3bd9d0247008d732e4f446842692b2dc4587ec8278acd33d8",
         "references/visualization.md": "0e5ef61808dc0bb1d3820a0695aa86a4af6659f1ba2324204953b84dda6f3815"

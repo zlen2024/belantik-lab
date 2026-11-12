@@ -22,6 +22,10 @@ Resolve bundled scripts relative to this installed skill directory, not upstream
 
 Use this tool only when the project uses it or the request benefits from it. Preserve existing training frameworks and tracking systems. Training examples are illustrations, not a reason to launch jobs, download datasets, start servers or deploy models during skill installation. Follow the local research skill's train/validation/test separation.
 
+### Thermodynamic-computing run contract
+
+For research in this workspace, MLflow is the canonical experiment ledger across classical, THRML, Torx, and future physical-backend runs. Resolve the tracking URI explicitly from the active project decision; for Word Energy, follow `projects/word-energy/TRACKING_DECISION.md` so the local SQLite tracker is not silently replaced by an inherited default. Before a run, log `execution_tier` (`classical`, `thrml_simulator`, `torx_simulator`, or `hardware`) and `device_class` (`cpu_gpu_simulator`, `remote_simulator`, or `physical_probabilistic_chip`), backend/package version, Git commit or dirty-tree snapshot, model family, energy/sign convention, variable encoding, `β`/temperature convention, sampler/update schedule, applicable chain count, burn-in and sample count, graph size/degree, data version/hash and split, seed, and an environment/config artifact. Log uncertainty-aware metrics and artifacts that identify the exact fixture or mapping used. Only use `hardware` with `physical_probabilistic_chip` after an actual chip run; a remote CPU/GPU service, including `extro-sim`, remains a simulator. Record the device/version, date, program configuration, and limitations. Keep TensorBoard links or artifacts associated with this MLflow run; do not create an untraceable second record.
+
 
 ## When to Use This Skill
 

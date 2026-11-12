@@ -14,6 +14,10 @@ The user's saved notes are in Bahasa Melayu with English technical terms. Reply 
 
 Resolve bundled scripts relative to this installed skill directory, not upstream examples under `~/.claude/skills/`. In Windows PowerShell use a compatible `python` interpreter, and Git Bash for `.sh` scripts. Installing this skill does not install the libraries shown in its examples; use the target project's environment when those libraries are needed.
 
+### Thermodynamic-computing papers
+
+For a paper about EBM physics, probabilistic hardware, THRML, Torx, p-bits, or Extropic, separate: (1) the mathematical model, (2) a normal-computing simulator result, (3) a hardware claim, and (4) an extrapolation. Record the energy/sign, variable encoding, temperature or `β`, sampler/update rule, graph/connectivity constraints, and every reported backend/device. A simulated result is not evidence that a physical chip executed the program. Route implementation questions to `ebm-training`, `thrml`, or `torx`; route experiment records to `mlflow`.
+
 For Malay Markdown, use `scripts/check_malay_note.py`; inspect evidence and fluency separately. For HTML use `index.ms.html`, `lang="ms"`, and remove the unused language switch instead of linking nonexistent translations. Use the upstream bilingual validator only for an explicitly requested bilingual pair.
 
 

@@ -14,6 +14,10 @@ The user's saved notes are in Bahasa Melayu with English technical terms. Reply 
 
 Resolve bundled scripts relative to this installed skill directory, not upstream examples under `~/.claude/skills/`. In Windows PowerShell use a compatible `python` interpreter, and Git Bash for `.sh` scripts. Installing this skill does not install the libraries shown in its examples; use the target project's environment when those libraries are needed.
 
+### Thermodynamic-computing evidence adapter
+
+When the paper concerns EBM physics or probabilistic hardware, include an explicit evidence table or prose equivalent that separates the equation/model, simulator evidence, physical-hardware evidence, and the note's own inference. Preserve reported energy/sign conventions, spin/bit encoding, `β` or temperature, sampling method, graph constraints, and backend/device/version. Do not upgrade simulation evidence into a hardware claim. Send implementable details to `paper2code` with `ebm-training`, `thrml`, or `torx` as appropriate; use `mlflow` only when an experiment is actually requested.
+
 ### Malay delivery adapter
 
 The upstream deterministic pipeline supports only `en` and `zh-CN`; it has no Malay profile. Do not label Malay text as English or claim its language lint validated Malay.

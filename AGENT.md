@@ -86,7 +86,24 @@ For Word Energy, Spring Compression, and future ML research, select from these *
 | [tensorboard](.agents/skills/tensorboard/SKILL.md) | Inspecting learning curves, model graphs, histograms, or profiling data. |
 | [ebm-training](.agents/skills/ebm-training/SKILL.md) | Choosing, training, checking, or debugging an Energy-Based Model. Required for EBM comparisons and training decisions. |
 | [thrml](.agents/skills/thrml/SKILL.md) | Implementing an Ising/Boltzmann model, block Gibbs sampling, or the THRML path toward Extropic hardware. |
-| [torx](.agents/skills/torx/SKILL.md) | Implementing Torx stochastic circuits, p-bits/p-dits, or directed factor graphs. |
+| [torx](.agents/skills/torx/SKILL.md) | Implementing Torx stochastic circuits, p-bits/p-dits, or directed factor graphs. Planned lowering to hardware must be verified for the available backend. |
+
+### Thermodynamic-computing research contract
+
+The research goal is to test models that may eventually execute on thermodynamic/probabilistic hardware. Keep four execution environments distinct in plans, code, MLflow records, figures, and conclusions:
+
+| Environment | Role and permitted conclusion |
+|---|---|
+| Classical reference | Python, PyTorch, JAX, enumeration, or conventional MCMC. Use it to establish equations, signs, metrics, and a baseline. It is not thermodynamic hardware. |
+| THRML simulator | JAX simulation of block-Gibbs Ising/Boltzmann programs that map toward Extropic hardware. It supports hardware-aligned feasibility tests, not a claim of physical-chip execution. |
+| Torx simulator | JAX simulation of parametrised stochastic circuits/DFGs. Use it for circuit semantics, estimators, and small exact checks; do not treat simulator output as a hardware measurement. Planned lowering/backend availability must be verified. |
+| Physical probabilistic chip | A real thermodynamic/probabilistic device, not a remote CPU/GPU service or `extro-sim`. Claim this only when the run identifier, backend, device/version, date, program configuration, and measured output are recorded. |
+
+For an EBM, `E` is normally a learned compatibility score or dimensionless Boltzmann quantity such as `βE`, not automatically energy in joules. State the sign convention, variable encoding (`{-1,+1}` spin or `{0,1}` bit), `β`/temperature convention, sampler/update rule, graph topology and readout before comparing environments. A classical model is a scientific reference; a THRML or Torx translation is a separate implementation whose agreement must be measured on a small exact fixture first.
+
+Use MLflow as the system of record for experiments. Resolve the tracking URI explicitly from the active project's tracking decision; Word Energy's local SQLite URI is described in `projects/word-energy/TRACKING_DECISION.md`, so directory-dependent defaults must not select a different tracker. Every thermodynamic-computing run records: `execution_tier`, `device_class` (`cpu_gpu_simulator`, `remote_simulator`, or `physical_probabilistic_chip`), backend and package version, Git commit or dirty-tree snapshot, model family, energy/encoding convention, sampler/update schedule and applicable chain count, burn-in and sample count, graph size/degree, seed, data version/hash and split, environment/config artifact, measured metrics, and known limitations. TensorBoard may visualize dense diagnostics, but should link back to the MLflow run rather than become a second, conflicting experiment record. Do not start paid cloud or physical hardware runs without explicit authorization.
+
+When a task requests a translation from classical code to THRML or Torx, before scaling: (1) reproduce a classical exact or known-answer fixture; (2) map the same observable to THRML or Torx and check agreement within Monte-Carlo uncertainty; (3) run the intended simulator experiment; (4) use physical hardware only when available and explicitly authorized. Keep simulation results, hardware results, and extrapolations separately labeled. Classical-only research need not add a simulator lane.
 
 ### ML research and paper reading
 

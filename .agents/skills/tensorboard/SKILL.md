@@ -22,6 +22,10 @@ Resolve bundled scripts relative to this installed skill directory, not upstream
 
 Use this tool only when the project uses it or the request benefits from it. Preserve existing training frameworks and tracking systems. Training examples are illustrations, not a reason to launch jobs, download datasets, start servers or deploy models during skill installation. Follow the local research skill's train/validation/test separation.
 
+### Thermodynamic-computing diagnostics
+
+Use TensorBoard for dense diagnostics while MLflow remains the canonical run record. Keep every event log linked to its MLflow run and label the execution tier (`classical`, `thrml_simulator`, `torx_simulator`, or `hardware`). For EBM work, visualize energies and positive/negative-phase statistics separately, sampler diagnostics such as acceptance/mixing or effective sample size when available, constraint violations, and agreement with an exact small fixture. Display uncertainty rather than treating a noisy trace as hardware evidence. A THRML or Torx visualization is still simulator evidence unless the underlying run recorded a real physical backend.
+
 
 ## When to Use This Skill
 
