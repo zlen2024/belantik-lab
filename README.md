@@ -1,10 +1,10 @@
 # Research workspace
 
-Workspace penyelidikan EBM dan thermodynamic computing. Untuk arahan agent, baca [AGENT.md](AGENT.md).
+An experimental workspace for energy-based models and thermodynamic computing. Agents should read [AGENT.md](AGENT.md) before working here.
 
-- [Projek aktif Word Energy](projects/word-energy/README.md): pelan Ising/Z1 dan baseline Gaussian, termasuk sejarah review.
-- [Eksperimen aktif spring compression](projects/spring-compression/README.md): projek aktif kedua; original sementara masih di `research/spring_compression` dan tidak termasuk archive legacy.
-- [Pelan migrasi workspace](RESEARCH_WORKSPACE_MIGRATION_PLAN.md) dan [rekod kritik](research_workspace_planning/reviews/REVIEW_LOG.md).
-- [Archive lokal](archives/README.md): salinan legacy diperiksa secara berperingkat. Original kekal sehingga backup off-device dan langkah pembersihan disahkan.
+- [Word Energy](projects/word-energy/README.md): active research on the Ising/Z1 design, with a Gaussian baseline and review history.
+- [Spring Compression](projects/spring-compression/README.md): a second active experiment. Its original copy remains temporarily at `research/spring_compression`; it is not in the legacy archive.
+- [Workspace migration plan](RESEARCH_WORKSPACE_MIGRATION_PLAN.md) and [review record](research_workspace_planning/reviews/REVIEW_LOG.md).
+- [Local archive](archives/README.md): verified copies of legacy projects. Originals remain in place until an off-device backup and a separate cleanup decision are verified.
 
-Safety ZIP sedia ada meliputi dua pelan dan skills, bukan seluruh eksperimen/video. Ia perlu disalin ke drive lain dan diuji; backup penuh off-device masih belum disahkan. Dataset, checkpoint, video, salinan archive dan secrets tidak dimasukkan ke Git secara default.
+The existing small safety ZIP contains the two Word Energy plans and skills, not all experiments or videos. It still needs to be copied to another drive and tested; a complete off-device backup has not yet been verified. Datasets, checkpoints, videos, raw archive copies and secrets are excluded from Git by default.

@@ -1,9 +1,9 @@
-# Spring compression — eksperimen aktif
+# Spring compression — active experiment
 
-Ini projek aktif kedua, bukan archive legacy. Fail asal disalin dari `research/spring_compression` dan 19 fail dipadankan SHA-256 sebelum README ini ditambah. Original masih berada pada lokasi lama sebagai perlindungan sementara; [manifest salinan](../spring-compression-MIGRATION.json).
+This is the second active project, not a legacy archive. Its files were copied from `research/spring_compression`; all 19 original files passed SHA-256 verification before this README was added. The original remains at its old location as temporary protection; see the [copy manifest](../spring-compression-MIGRATION.json).
 
-- [Protokol asal](PROTOCOL.md) dan [laporan asal](REPORT.md)
-- [Protokol mobility](MOBILITY_PROTOCOL.md) dan [laporan](MOBILITY_REPORT.md)
-- [Protokol scaling](SCALING_PROTOCOL.md) dan [laporan](SCALING_REPORT.md)
+- [Original protocol](PROTOCOL.md) and [report](REPORT.md)
+- [Mobility protocol](MOBILITY_PROTOCOL.md) and [report](MOBILITY_REPORT.md)
+- [Scaling protocol](SCALING_PROTOCOL.md) and [report](SCALING_REPORT.md)
 
-Hasil sedia ada ialah eksperimen/simulasi yang didokumenkan dalam laporan tersebut; jangan menyebutnya sebagai ukuran hardware tanpa bukti. Pengubahsuaian baharu dibuat dalam direktori aktif ini dengan sumber asal masih dipelihara.
+The existing results are the experiments and simulations documented in those reports; do not describe them as hardware measurements without evidence. New work belongs in this active directory while the original remains preserved.

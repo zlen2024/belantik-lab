@@ -1,11 +1,11 @@
-# Archive research lama
+# Legacy research archive
 
-Archive ini ialah salinan setempat. Eksperimen asal tidak dipadam. Backup penuh pada drive berasingan masih belum disahkan.
+This archive contains local copies. The original experiments have not been deleted, and a complete backup on a separate drive has not yet been verified.
 
-Kandungan di `legacy-projects/` hanya dianggap lengkap apabila manifest SHA-256 dan laporan batch menyatakan `verified`. Direktori dengan status lain perlu disemak sebelum digunakan. Metadata dan indeks tidak menentukan hasil eksperimen yang tidak diketahui. `.git`, fail tersembunyi, video dan data besar termasuk skop salinan; junction direkod secara berasingan.
+Contents under `legacy-projects/` are considered copied only when their SHA-256 manifest and batch report record a verified status. Investigate any other status before use. Metadata and the index do not invent unknown experimental outcomes. Git metadata, hidden files, videos and large data are in scope; junctions are recorded separately.
 
-`archive_project.py` menggunakan inventori SHA-256 yang telah dibekukan, memeriksa semula source serta destination dan tidak mengubah original. Ia berhenti jika terdapat perubahan source, fail tidak boleh dibaca atau reparse point yang belum diselesaikan. Ketiadaan backup off-device tetap limitation walaupun archive lokal lulus hash.
+`archive_project.py` uses the frozen SHA-256 inventory, rechecks source and destination, and never modifies the original. It stops if the source changes, a file cannot be read, or a reparse point requires review. Matching local hashes are not a substitute for an off-device backup.
 
-[Indeks archive](index.yaml) menunjukkan status setiap projek. Jalankan `python archives/build_index.py` selepas laporan copy berubah; `copy_in_progress` bukan archive yang telah selesai. Outcome `null` bermaksud belum disahkan, bukan gagal atau berjaya.
+The [archive index](index.yaml) records each project’s status. Run `python archives/build_index.py` after copy reports change; `copy_in_progress` does not mean a completed archive. A `null` outcome means unknown, not success or failure.
 
-Ujian restore setempat `analog-lab-learn` telah membandingkan 1,559 fail dan memeriksa Git HEAD, branch, refs, worktree dan status termasuk perubahan belum commit. Salinan ujian ada di `restore-checks/` dan tidak direkod sebagai projek legacy baharu. Ini belum menguji pemulihan daripada drive lain. Sesetengah `.venv` dan editable installs mungkin menggunakan absolute path lama; hash salinan yang sepadan tidak menjamin environment berfungsi selepas dipindahkan.
+A local restore test of `analog-lab-learn` compared 1,559 files and checked Git HEAD, branch, refs, worktree and status, including an uncommitted change. The test copy is in `restore-checks/`; it is not a separate legacy project. Recovery from another drive has not yet been tested. Some `.venv` directories and editable installs may contain old absolute paths, so matching hashes do not guarantee that an environment works after relocation.

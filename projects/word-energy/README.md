@@ -1,11 +1,11 @@
 # Word Energy research
 
-Ruang kerja baharu untuk Word Energy Embedding. Ini scaffold; model baharu belum diimplementasi atau dilatih.
+This is the active workspace for Word Energy Embedding. It is currently a scaffold: the new model has not yet been implemented or trained.
 
-- [Pelan utama Ising/Z1](plans/word2energy/WORD_ENERGY_Z1_FIRST_PLAN.md)
-- [Pelan Gaussian baseline](plans/word2energy/WORD_ENERGY_EMBEDDING_V2_PLAN.md)
-- [Idea dan teks asal](plans/word2energy/RUMUSAN_IDEA_BIKAR_ENERGY_EMBEDDING.md)
-- [Rekod critic Ising](plans/word2energy/reviews/z1_first/REVIEW_LOG.md) dan [critic Gaussian](plans/word2energy/reviews/energy_embedding_v2/REVIEW_LOG.md)
-- [Keputusan experiment tracker](TRACKING_DECISION.md): MLflow lokal dipilih pengguna.
+- [Primary Ising/Z1 plan](plans/word2energy/WORD_ENERGY_Z1_FIRST_PLAN.md)
+- [Gaussian baseline plan](plans/word2energy/WORD_ENERGY_EMBEDDING_V2_PLAN.md)
+- [Original ideas and conversation](plans/word2energy/RUMUSAN_IDEA_BIKAR_ENERGY_EMBEDDING.md)
+- [Ising review](plans/word2energy/reviews/z1_first/REVIEW_LOG.md) and [Gaussian review](plans/word2energy/reviews/energy_embedding_v2/REVIEW_LOG.md)
+- [Experiment tracking decision](TRACKING_DECISION.md): the user selected local MLflow.
 
-Skor critic menilai pelan, bukan hasil latihan atau bukti pemetaan chip. Protokol asal dan test-set lama dikekalkan; baca plan sebelum eksperimen. Legacy masih berada di `../../word2energy` sehingga archive disahkan. Keperluan tracker langsung dicatat dalam `requirements-tracking.txt`; freeze environment yang diuji dan database lokal berada di `tracking/` dan perlu dibackup, bukan di-commit.
+Review scores assess the plans, not training results or evidence of chip compatibility. Preserve the original protocols and previously used test sets; read the plan before running experiments. The legacy source remains at `../../word2energy` while archive recovery is being verified. The direct tracking dependency is listed in `requirements-tracking.txt`; the tested environment freeze and local database are in `tracking/` and must be backed up rather than committed.
