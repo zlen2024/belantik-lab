@@ -54,3 +54,13 @@
 **/wandb/
 **/runs/
 **/tracking/
+# The user requested that ZIP archives and video files stay out of GitHub.
+*.zip
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.m4v
+*.mpeg
+*.mpg
