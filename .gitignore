@@ -49,10 +49,12 @@
 **/.env.*
 **/.venv/
 **/.uv-cache/
+**/.tmp/
 **/__pycache__/
 **/*.pyc
 **/wandb/
 **/runs/
+**/mlruns/
 **/tracking/
 # The user requested that ZIP archives and video files stay out of GitHub.
 *.zip
