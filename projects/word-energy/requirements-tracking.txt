@@ -1,0 +1,3 @@
+# Direct tracker dependency used for the local smoke test (2026-11-12).
+# This is not a full transitive lock; the tested environment freeze is in tracking/.
+mlflow==3.18.0

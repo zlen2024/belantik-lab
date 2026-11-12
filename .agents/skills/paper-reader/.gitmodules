@@ -1,0 +1,7 @@
+[submodule "upstream/paper-reading-skill"]
+	path = upstream/paper-reading-skill
+	url = https://github.com/kingslayer-bot/paper-reading-skill
+[submodule "upstream/nanochat"]
+	path = upstream/nanochat
+	url = https://github.com/karpathy/nanochat
+	shallow = true

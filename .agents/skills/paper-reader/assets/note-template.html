@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="LANG">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Fill: paper short title -->
+<title>PAPER_SHORT_TITLE</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #fbfbfa; --fg: #1d1d1f; --muted: #6b6b70; --line: #e3e3e0;
+  --accent: #2f5fd0; --card: #ffffff; --take: #f1f4fb; --notes: #fff8e6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17181a; --fg: #ececec; --muted: #9a9aa0; --line: #2c2d31;
+    --accent: #7ea2ff; --card: #1e1f22; --take: #1f2633; --notes: #2b2617;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17181a; --fg: #ececec; --muted: #9a9aa0; --line: #2c2d31;
+  --accent: #7ea2ff; --card: #1e1f22; --take: #1f2633; --notes: #2b2617;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.7 -apple-system, "PingFang SC", "Helvetica Neue", "Noto Sans SC", sans-serif;
+}
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 96px; }
+header.paper { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 28px; }
+header.paper h1 { font-size: 1.8rem; line-height: 1.3; margin: 0 0 8px; }
+header.paper .meta { color: var(--muted); font-size: .92rem; }
+header.paper .meta a { color: var(--accent); }
+.hint { color: var(--muted); font-size: .85rem; margin-top: 10px; }
+section.slide { margin: 0 0 48px; }
+section.slide h2 { font-size: 1.35rem; margin: 0 0 12px; }
+.takeaway {
+  background: var(--take); border-left: 4px solid var(--accent);
+  border-radius: 6px; padding: 12px 18px; margin: 0 0 16px;
+}
+.takeaway ul { margin: 0; padding-left: 1.2em; }
+figure { margin: 16px 0; text-align: center; }
+figure img { max-width: 100%; height: auto; border-radius: 6px; background: #fff; }
+figcaption { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+.detail h3 { font-size: 1.05rem; margin: 20px 0 6px; }
+.notes {
+  background: var(--notes); border-radius: 6px; padding: 10px 16px;
+  font-size: .92rem; margin-top: 16px;
+}
+.notes::before { content: "讲解要点"; display: block; font-weight: 600; margin-bottom: 4px; }
+:root:lang(en) .notes::before { content: "Speaker notes"; }
+.lang-switch { float: right; font-size: .9rem; color: var(--accent); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; margin: 12px 0; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+th { background: var(--card); }
+code { font-size: .9em; }
+pre {
+  overflow-x: auto; max-width: 100%; font-size: .82rem; line-height: 1.5;
+  background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
+}
+.katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.src { color: var(--muted); font-size: .85rem; }
+
+/* Slide mode: press S. Each section becomes one screen showing only the
+   title, takeaway and figure. N toggles speaker notes. */
+body.slides main { max-width: none; padding: 0; }
+body.slides header.paper { display: none; }
+body.slides { scroll-snap-type: y mandatory; overflow-y: scroll; height: 100vh; }
+body.slides section.slide {
+  min-height: 100vh; margin: 0; padding: 6vh 8vw; scroll-snap-align: start;
+  display: flex; flex-direction: column; justify-content: center;
+  border-bottom: 1px solid var(--line);
+}
+body.slides section.slide h2 { font-size: 2.2rem; }
+body.slides .takeaway { font-size: 1.35rem; background: none; border: 0; padding: 0; }
+body.slides figure img { max-height: 55vh; }
+body.slides .detail { display: none; }
+body.slides .notes { display: none; }
+body.slides.show-notes .notes { display: block; }
+@media print {
+  .notes, .hint { display: none; }
+  section.slide { break-inside: avoid-page; }
+}
+</style>
+</head>
+<body>
+<main>
+<header class="paper">
+  <a class="lang-switch" href="OTHER_LANG_FILE">OTHER_LANG_LABEL</a>
+  <h1>PAPER_FULL_TITLE</h1>
+  <div class="meta">
+    AUTHORS, YEAR · <a href="https://arxiv.org/abs/ARXIV_ID">arXiv:ARXIV_ID</a>
+    · paper_type: TYPE · reading_depth: DEPTH · tags: TAGS
+  </div>
+  <p>ONE_PARAGRAPH_OVERVIEW</p>
+  <div class="hint">HINT</div>
+</header>
+
+<!-- Repeat one <section class="slide"> per idea. Keep the takeaway to what
+     fits on one slide; everything else goes in .detail. -->
+<section class="slide" id="problem">
+  <h2>SECTION_TITLE</h2>
+  <div class="takeaway">
+    <ul>
+      <li>KEY_POINT</li>
+    </ul>
+  </div>
+  <figure>
+    <img src="figures/FIGURE.png" alt="FIGURE_DESCRIPTION">
+    <figcaption>Figure N: CAPTION</figcaption>
+  </figure>
+  <div class="detail">
+    <p>FULL_EXPLANATION with inline math $o_t$ and display math:</p>
+    $$ \pi_\theta(\mathbf{a}_{t:t+H} \mid o_t, \ell) $$
+    <p class="src">来源：Section X, Eq. (Y)</p>
+  </div>
+  <aside class="notes">WHAT_TO_SAY_WHEN_PRESENTING</aside>
+</section>
+
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$", right: "$", display: false },
+      { left: "\\(", right: "\\)", display: false },
+      { left: "\\[", right: "\\]", display: true }
+    ],
+    throwOnError: false
+  });
+  if (window.mermaid) {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default"
+    });
+    mermaid.run({ querySelector: ".mermaid" });
+  }
+});
+// Track the current slide in a variable rather than reading the scroll
+// position, so fast repeated key presses do not stall mid-animation.
+var slideIndex = 0;
+function visibleSlide() {
+  var sections = document.querySelectorAll("section.slide");
+  for (var i = 0; i < sections.length; i++) {
+    if (sections[i].getBoundingClientRect().bottom > window.innerHeight / 2) return i;
+  }
+  return sections.length - 1;
+}
+document.addEventListener("keydown", function (e) {
+  if (e.target.closest("input, textarea")) return;
+  var body = document.body;
+  var sections = document.querySelectorAll("section.slide");
+  if (e.key === "s" || e.key === "S") {
+    var i = visibleSlide();
+    body.classList.toggle("slides");
+    slideIndex = i;
+    sections[i].scrollIntoView();
+    return;
+  }
+  if (!body.classList.contains("slides")) return;
+  if (e.key === "n" || e.key === "N") { body.classList.toggle("show-notes"); return; }
+  var step = { ArrowDown: 1, ArrowRight: 1, PageDown: 1, " ": 1,
+               ArrowUp: -1, ArrowLeft: -1, PageUp: -1 }[e.key];
+  if (!step) return;
+  e.preventDefault();
+  slideIndex = Math.max(0, Math.min(sections.length - 1, slideIndex + step));
+  sections[slideIndex].scrollIntoView({ behavior: "smooth" });
+});
+// Resync after the user scrolls with the mouse or trackpad.
+document.addEventListener("scrollend", function () {
+  if (document.body.classList.contains("slides")) slideIndex = visibleSlide();
+});
+</script>
+</body>
+</html>

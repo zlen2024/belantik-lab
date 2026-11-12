@@ -1,0 +1,93 @@
+{
+  "note": "Copies from verified safety backup plus linked original Markdown dependencies; no source modified",
+  "files": [
+    {
+      "path": "RUMUSAN_IDEA_BIKAR_ENERGY_EMBEDDING.md",
+      "sha256": "b331007321c72766f8ac678b2f3ebc76a29440287e1f696bb5b1fc423e5a0b63"
+    },
+    {
+      "path": "TEKS_ASAL_BIKAR_ENERGY_EMBEDDING.txt",
+      "sha256": "c27e56e4931c9fc580d8b5f620d3bf4b3338fb56de9be652d90c864f80fd5423"
+    },
+    {
+      "path": "WORD_ENERGY_EMBEDDING_V2_PLAN.md",
+      "sha256": "2b48d78d899ed97ae49ae5c65426fa5de15015404be3c9ecedb02742264dfadc"
+    },
+    {
+      "path": "WORD_ENERGY_Z1_FIRST_PLAN.md",
+      "sha256": "28393c1c3b565c4afbb5a4d119884f4207216155c1ef120d97673c14666af328"
+    },
+    {
+      "path": "landscape_ebm/SCALE_WORD2VEC_EXTENDED_PLAN.md",
+      "sha256": "b2463324ad0c3667c83a0d6c790828479a2623bfd2d3205b0ea444c184cd313c"
+    },
+    {
+      "path": "landscape_ebm/SCALE_WORD2VEC_PLAN.md",
+      "sha256": "335deb1351be468520eb6d7f114804b98ab3a3578c16ebf4b73b07aaeb2b9c46"
+    },
+    {
+      "path": "landscape_ebm/WORD2VEC_SCALING.md",
+      "sha256": "44a5948746116d678865cbed5c49017c15cc8f587f22d6ffcf99e54b46077531"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/ising_six_spin_fixture.json",
+      "sha256": "0a120cf7c6386d8ad972dea5414781fba1f7bc12db4672b1b5e7e52c7353e415"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/ising_six_spin_fixture.py",
+      "sha256": "4e0c1b7f0b7b1dab186c8f7b7db741778877fbe39522b94ea08eb5db3accbecc"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/math_spot_check.json",
+      "sha256": "6bf9fc42272d7fdaef808074cfd67c077cc8dc080ae3b77acfbdfe79513d7940"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/REVIEW_LOG.md",
+      "sha256": "d6eab7093e1c35ebc7d342676f4d3225d8f5e8bb4b0df40241898781925d1e0e"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/round_01_plan.md",
+      "sha256": "8225000b8a45006c1ae55c8bfd0dee47a539e0befe9b770d9eccfdc5399c3047"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/round_02_plan.md",
+      "sha256": "aa6858bcc30322f74f606d833d23380947572fd71d9c88378e1e476326fb5aca"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/round_03_plan.md",
+      "sha256": "a69a3cfed608518790193de0a5a189ef09723bdda4d8a89f9ca21e92b9009372"
+    },
+    {
+      "path": "reviews/z1_first/distractor_fixture.json",
+      "sha256": "2ad92eabfc3d48726771cf9b8a9b030f4053366fb047de76c68e374af298ad5b"
+    },
+    {
+      "path": "reviews/z1_first/distractor_fixture.py",
+      "sha256": "2dd9cfb3558babbc461ee5cd7046e4f89151ca3cef0c9cf4fa27d4300209b0cf"
+    },
+    {
+      "path": "reviews/z1_first/REVIEW_LOG.md",
+      "sha256": "53dd634eb5b59a88439dabb3033ff2d3d7358a96115aa66d6e09988e857ead5b"
+    },
+    {
+      "path": "reviews/z1_first/round_01_plan.md",
+      "sha256": "ab000351a13086d5149d1fe6c79518b6ef928839aa72d241cb8a15ff5346d5eb"
+    },
+    {
+      "path": "reviews/z1_first/round_02_plan.md",
+      "sha256": "28393c1c3b565c4afbb5a4d119884f4207216155c1ef120d97673c14666af328"
+    },
+    {
+      "path": "reviews/energy_embedding_v2/__pycache__/ising_six_spin_fixture.cpython-313.pyc",
+      "sha256": "7446160046745fb1b9408df267b84353743cef8ef98999862b36720813abc021"
+    },
+    {
+      "path": "landscape_ebm/scale_extended_results/REPORT.md",
+      "sha256": "414b4dee6bc53bec7466a30572da93ca96206e7ba7cd3a4178a9a856b04b1858"
+    },
+    {
+      "path": "landscape_ebm/scale_results/REPORT.md",
+      "sha256": "2f4278c869d1b86124410dca2c26215f8897f9a154b14cf766c5685fe28c70bf"
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "note": "Junctions are not staged as links. The two THRML snapshots omit nested .git histories, which remain in source and local safety backup. agents THRML git status currently fails; do not assume clean.",
+  "junctions": [
+    {
+      "path": ".claude\\skills\\autoresearch",
+      "target": ".agents\\skills\\autoresearch"
+    },
+    {
+      "path": ".claude\\skills\\deeppapernote",
+      "target": ".agents\\skills\\deeppapernote"
+    },
+    {
+      "path": ".claude\\skills\\ebm-training",
+      "target": ".agents\\skills\\ebm-training"
+    },
+    {
+      "path": ".claude\\skills\\embedded-captions",
+      "target": ".agents\\skills\\embedded-captions"
+    },
+    {
+      "path": ".claude\\skills\\faceless-explainer",
+      "target": ".agents\\skills\\faceless-explainer"
+    },
+    {
+      "path": ".claude\\skills\\figma",
+      "target": ".agents\\skills\\figma"
+    },
+    {
+      "path": ".claude\\skills\\general-video",
+      "target": ".agents\\skills\\general-video"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes",
+      "target": ".agents\\skills\\hyperframes"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-animation",
+      "target": ".agents\\skills\\hyperframes-animation"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-audio",
+      "target": ".agents\\skills\\hyperframes-audio"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-cli",
+      "target": ".agents\\skills\\hyperframes-cli"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-core",
+      "target": ".agents\\skills\\hyperframes-core"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-creative",
+      "target": ".agents\\skills\\hyperframes-creative"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-keyframes",
+      "target": ".agents\\skills\\hyperframes-keyframes"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-registry",
+      "target": ".agents\\skills\\hyperframes-registry"
+    },
+    {
+      "path": ".claude\\skills\\hyperframes-studio",
+      "target": ".agents\\skills\\hyperframes-studio"
+    },
+    {
+      "path": ".claude\\skills\\manim-explain-video",
+      "target": ".agents\\skills\\manim-explain-video"
+    },
+    {
+      "path": ".claude\\skills\\media-use",
+      "target": ".agents\\skills\\media-use"
+    },
+    {
+      "path": ".claude\\skills\\ml-research-paper-reading",
+      "target": ".agents\\skills\\ml-research-paper-reading"
+    },
+    {
+      "path": ".claude\\skills\\mlflow",
+      "target": ".agents\\skills\\mlflow"
+    },
+    {
+      "path": ".claude\\skills\\motion-graphics",
+      "target": ".agents\\skills\\motion-graphics"
+    },
+    {
+      "path": ".claude\\skills\\music-to-video",
+      "target": ".agents\\skills\\music-to-video"
+    },
+    {
+      "path": ".claude\\skills\\paper-reader",
+      "target": ".agents\\skills\\paper-reader"
+    },
+    {
+      "path": ".claude\\skills\\paper2code",
+      "target": ".agents\\skills\\paper2code"
+    },
+    {
+      "path": ".claude\\skills\\pr-to-video",
+      "target": ".agents\\skills\\pr-to-video"
+    },
+    {
+      "path": ".claude\\skills\\product-launch-video",
+      "target": ".agents\\skills\\product-launch-video"
+    },
+    {
+      "path": ".claude\\skills\\pytorch-lightning",
+      "target": ".agents\\skills\\pytorch-lightning"
+    },
+    {
+      "path": ".claude\\skills\\remotion-to-hyperframes",
+      "target": ".agents\\skills\\remotion-to-hyperframes"
+    },
+    {
+      "path": ".claude\\skills\\slideshow",
+      "target": ".agents\\skills\\slideshow"
+    },
+    {
+      "path": ".claude\\skills\\talking-head-recut",
+      "target": ".agents\\skills\\talking-head-recut"
+    },
+    {
+      "path": ".claude\\skills\\tensorboard",
+      "target": ".agents\\skills\\tensorboard"
+    },
+    {
+      "path": ".claude\\skills\\torx",
+      "target": ".agents\\skills\\torx"
+    }
+  ],
+  "nested_git_heads": {
+    ".agents/skills/thrml": "1e881a28bebfdf6e8d433d93e90a0207aebd19cd",
+    ".claude/skills/thrml": "1e881a28bebfdf6e8d433d93e90a0207aebd19cd"
+  },
+  "pi_junctions": [
+    {
+      "path": ".pi/skills/embedded-captions",
+      "target": ".agents/skills/embedded-captions"
+    },
+    {
+      "path": ".pi/skills/faceless-explainer",
+      "target": ".agents/skills/faceless-explainer"
+    },
+    {
+      "path": ".pi/skills/figma",
+      "target": ".agents/skills/figma"
+    },
+    {
+      "path": ".pi/skills/general-video",
+      "target": ".agents/skills/general-video"
+    },
+    {
+      "path": ".pi/skills/hyperframes",
+      "target": ".agents/skills/hyperframes"
+    },
+    {
+      "path": ".pi/skills/hyperframes-animation",
+      "target": ".agents/skills/hyperframes-animation"
+    },
+    {
+      "path": ".pi/skills/hyperframes-audio",
+      "target": ".agents/skills/hyperframes-audio"
+    },
+    {
+      "path": ".pi/skills/hyperframes-cli",
+      "target": ".agents/skills/hyperframes-cli"
+    },
+    {
+      "path": ".pi/skills/hyperframes-core",
+      "target": ".agents/skills/hyperframes-core"
+    },
+    {
+      "path": ".pi/skills/hyperframes-creative",
+      "target": ".agents/skills/hyperframes-creative"
+    },
+    {
+      "path": ".pi/skills/hyperframes-keyframes",
+      "target": ".agents/skills/hyperframes-keyframes"
+    },
+    {
+      "path": ".pi/skills/hyperframes-registry",
+      "target": ".agents/skills/hyperframes-registry"
+    },
+    {
+      "path": ".pi/skills/hyperframes-studio",
+      "target": ".agents/skills/hyperframes-studio"
+    },
+    {
+      "path": ".pi/skills/media-use",
+      "target": ".agents/skills/media-use"
+    },
+    {
+      "path": ".pi/skills/motion-graphics",
+      "target": ".agents/skills/motion-graphics"
+    },
+    {
+      "path": ".pi/skills/music-to-video",
+      "target": ".agents/skills/music-to-video"
+    },
+    {
+      "path": ".pi/skills/pr-to-video",
+      "target": ".agents/skills/pr-to-video"
+    },
+    {
+      "path": ".pi/skills/product-launch-video",
+      "target": ".agents/skills/product-launch-video"
+    },
+    {
+      "path": ".pi/skills/remotion-to-hyperframes",
+      "target": ".agents/skills/remotion-to-hyperframes"
+    },
+    {
+      "path": ".pi/skills/slideshow",
+      "target": ".agents/skills/slideshow"
+    },
+    {
+      "path": ".pi/skills/talking-head-recut",
+      "target": ".agents/skills/talking-head-recut"
+    }
+  ]
+}

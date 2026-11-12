@@ -1,0 +1,85 @@
+{
+  "source": "research/spring_compression",
+  "destination": "projects/spring-compression",
+  "files_verified": 19,
+  "source_retained": true,
+  "off_device_backup_verified": false,
+  "files": [
+    {
+      "path": "MOBILITY_PROTOCOL.md",
+      "sha256": "2d1f49d91cd8cd7752f3b43a420fc8d7ca81d6658b01e2fd1bed0cf3ef97cbd0"
+    },
+    {
+      "path": "MOBILITY_REPORT.md",
+      "sha256": "5d3cfd8654b67f2ce25cade289a5759c3fc4e87832b5096a0bbd867447181dcd"
+    },
+    {
+      "path": "PROTOCOL.md",
+      "sha256": "30939a3a9cdfb185f7895c32d0ac042e4af8f0b49464d8f15eb3e2ff2e4ebe8a"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "e20e74901752226be57c0ad9ade5b16a1b867c4982669bfd752307a9bbc68e41"
+    },
+    {
+      "path": "run_experiment.py",
+      "sha256": "bfae23d5f5f4fbf092ac140e6b6d52c78aafaf94fb4e1287e5419fea9ecfd671"
+    },
+    {
+      "path": "run_mobility.py",
+      "sha256": "af7107cc11b9cde72e9e978f2ec9ce656b9d0c3cc36db8a22cbe7ef8664531a0"
+    },
+    {
+      "path": "run_scaling.py",
+      "sha256": "9d4662ef8f1ffa42419ad4def25bd8fba8c7e3cb0d28972637602ea7ba9b43a8"
+    },
+    {
+      "path": "SCALING_PROTOCOL.md",
+      "sha256": "7c616a7405e757a73c421ef266686d73c4edf84be0c6c8b4a5f7a8af1cd06e4b"
+    },
+    {
+      "path": "SCALING_REPORT.md",
+      "sha256": "401335587fa10a08fc09848c7b9aec24f138bed952dae216cdad7c4cc5414a48"
+    },
+    {
+      "path": "verify_results.py",
+      "sha256": "fba1df4a838a6de078ac0a51d25ad2ee53a59227bcb4c0079fa959ae96336938"
+    },
+    {
+      "path": "verify_scaling.py",
+      "sha256": "5da50490e529f2cb813c0c678ec38cabec52c68e04eb173d22ab215a5fbf225e"
+    },
+    {
+      "path": "mobility_results/mobility.png",
+      "sha256": "5d6d4a651b6872526668eb3ef6b3d12843d9ff1f6c172c5929300f91bb446c4a"
+    },
+    {
+      "path": "mobility_results/results.json",
+      "sha256": "0bd7d8e43e0210d28cd399ca20acdeb93e1a671693af7c0a0d2b9d342d133fd3"
+    },
+    {
+      "path": "results/audit.json",
+      "sha256": "4512168753b0bd5f46b79c31cfecf77a5238e1650cb947871d5b65162ad55cd0"
+    },
+    {
+      "path": "results/experiment.png",
+      "sha256": "c1f4bcefa87ad5037faf2f311ab63bdd8f645ea9da4c543ef94e23bae88b3e73"
+    },
+    {
+      "path": "results/results.json",
+      "sha256": "ea4bb7a7bd1d958dba77cfeced250938b45c0582b20d4df27dc748c1fdbe75c7"
+    },
+    {
+      "path": "scaling_results/audit.json",
+      "sha256": "a7140f24e8bed6d235757cd26d212fce1e01f243ef4ba6c1dfb54d2d9c778f01"
+    },
+    {
+      "path": "scaling_results/results.json",
+      "sha256": "14a5e418b59380b1cd9c5f221cb377e782d21ff32397a206662335ac4216c199"
+    },
+    {
+      "path": "scaling_results/scaling.png",
+      "sha256": "b48075f91913b6059de5fd798d60254978d8571a885bfcb10a7d336fd53092e5"
+    }
+  ]
+}

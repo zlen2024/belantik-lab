@@ -1,0 +1,33 @@
+{
+  "record_count": 2160,
+  "hashes_verified": true,
+  "grounding_only_architectures_identical": true,
+  "perturbation_bounds_verified": true,
+  "mse_decomposition_verified": true,
+  "independent_matrix_integral_checks": [
+    {
+      "n": 16,
+      "rate": 1,
+      "horizon": 10.0,
+      "absolute_discrepancy": 5.551115123125783e-16
+    },
+    {
+      "n": 16,
+      "rate": 1,
+      "horizon": 5000.0,
+      "absolute_discrepancy": 1.5178830414797062e-18
+    },
+    {
+      "n": 16,
+      "rate": 16,
+      "horizon": 10.0,
+      "absolute_discrepancy": 4.884981308350689e-15
+    },
+    {
+      "n": 16,
+      "rate": 16,
+      "horizon": 5000.0,
+      "absolute_discrepancy": 9.974659986866641e-18
+    }
+  ]
+}

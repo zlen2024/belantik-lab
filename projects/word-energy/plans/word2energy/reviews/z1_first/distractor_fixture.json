@@ -1,0 +1,49 @@
+{
+  "kind": "Exact hand-set distractor fixtures; not training or hardware",
+  "conditions": {
+    "ambiguous": {
+      "biases": [
+        2,
+        -2
+      ],
+      "readout": [
+        0.040733022253282,
+        0.04073302225328183
+      ]
+    },
+    "dominant_finance": {
+      "biases": [
+        2,
+        2,
+        -2
+      ],
+      "readout": [
+        0.5116413864937784,
+        0.5116413864937784,
+        -0.46138291385148955
+      ]
+    },
+    "dominant_river": {
+      "biases": [
+        -2,
+        -2,
+        2
+      ],
+      "readout": [
+        0.5116413864937789,
+        0.5116413864937789,
+        -0.46138291385148983
+      ]
+    },
+    "swapped_ambiguous": {
+      "biases": [
+        -2,
+        2
+      ],
+      "readout": [
+        0.04073302225328175,
+        0.04073302225328196
+      ]
+    }
+  }
+}

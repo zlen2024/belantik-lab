@@ -1,0 +1,23 @@
+{
+  "skill_name": "paper-reader",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "精读 OpenVLA https://arxiv.org/abs/2406.09246 ，输出 HTML，下周组会要讲",
+      "expected_output": "paper-notes/openvla/ with paper.pdf, source/, index.zh.html and index.en.html built from the template (slide sections with takeaway/detail/notes), understand depth, zh version keeps technical terms in English, figures copied and linked; reply summarizes and links both files.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "帮我快速看一下 GR-1 这篇 https://arxiv.org/abs/2312.13139 值不值得精读，记个笔记",
+      "expected_output": "paper-notes/gr1/ (or similar) with paper.pdf, source/, note.zh.md and note.en.md at scan depth: Five Cs and a read/skip recommendation; full zh note shown in the reply.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Diffusion Policy https://arxiv.org/abs/2303.04137 里预测一整段 action sequence 但只执行前几步（receding horizon）那部分，帮我深入重建一下为什么这样设计，记成笔记",
+      "expected_output": "paper-notes/diffusion-policy/ with paper.pdf, source/, note.zh.md and note.en.md at reconstruct depth focused on action sequence prediction and receding horizon control (T_o, T_p, T_a), with equations from the LaTeX source and evidence from the ablations.",
+      "files": []
+    }
+  ]
+}

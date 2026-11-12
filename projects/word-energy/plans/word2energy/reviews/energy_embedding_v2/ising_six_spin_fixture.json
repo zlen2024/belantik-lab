@@ -1,0 +1,22 @@
+{
+  "kind": "Analytic hand-set Ising toy; exact enumeration only; not training or hardware execution",
+  "beta": 1,
+  "bank_internal_coupling": 1,
+  "context_bias_magnitude": 2,
+  "interaction_coupling": 0.5,
+  "n_spins": 6,
+  "states": 64,
+  "max_degree": 3,
+  "finance": {
+    "bank_plusplus": 0.9420753762108519,
+    "bank_minusminus": 0.020400783376518832,
+    "bank_other": 0.03752384041262925,
+    "Z": 65285.90123380872
+  },
+  "river": {
+    "bank_plusplus": 0.020400783376518832,
+    "bank_minusminus": 0.9420753762108519,
+    "bank_other": 0.03752384041262924,
+    "Z": 65285.90123380872
+  }
+}

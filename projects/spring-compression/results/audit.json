@@ -1,0 +1,23 @@
+{
+  "clique": {
+    "gaussian_mean_chi_square": 39.28987551434473,
+    "df": 40,
+    "mean_two_sided_p": 0.9959023536613578,
+    "exact_window_tau_inside_95percent_ci": true,
+    "direct_matrix_tau": 0.9999999999999999
+  },
+  "star": {
+    "gaussian_mean_chi_square": 43.04585657215245,
+    "df": 40,
+    "mean_two_sided_p": 0.6844326827068044,
+    "exact_window_tau_inside_95percent_ci": true,
+    "direct_matrix_tau": 1.2500000000000002
+  },
+  "cycle": {
+    "gaussian_mean_chi_square": 39.360227860535886,
+    "df": 40,
+    "mean_two_sided_p": 0.9977589019721085,
+    "exact_window_tau_inside_95percent_ci": true,
+    "direct_matrix_tau": 1.0000000000000004
+  }
+}

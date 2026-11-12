@@ -1,0 +1,56 @@
+# Default-deny root: legacy projects, datasets, videos and local backups are not staged by accident.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/AGENT.md
+!/AGENTS.md
+!/CLAUDE.md
+!/RESEARCH_WORKSPACE_MIGRATION_PLAN.md
+!/skills-lock.json
+!/research-skills.lock.json
+!/projects/
+!/archives/
+!/research_workspace_planning/
+!/.agents/
+!/.claude/
+!/shared/
+
+# Skill source is versioned except nested Git repos; junctions use a portable manifest.
+/.agents/*
+!/.agents/skills/
+/.agents/skills/thrml/
+/.claude/*
+!/.claude/skills/
+/.claude/skills/*
+!/.claude/skills/extropic/
+!/.claude/skills/manim-hyperframes-vertical/
+!/.claude/skills/manimce-best-practices/
+!/.claude/skills/motionprompt-explainer-data/
+!/.claude/skills/motionprompt-handmade-illustrated/
+!/.claude/skills/motionprompt-malaysia-festive/
+!/.claude/skills/motionprompt-product-brand/
+!/.claude/skills/motionprompt-retro-cinematic/
+!/.claude/skills/motionprompt-styles/
+!/.claude/skills/motionprompt-typography-social/
+
+# Only the archive's human-readable index and tooling are eligible; raw copies stay local.
+/archives/*
+!/archives/README.md
+!/archives/archive_project.py
+!/archives/archive_root_files.py
+!/archives/build_index.py
+!/archives/index.yaml
+
+# Inventory paths and restore reports can contain private local paths.
+/research_workspace_planning/inventory/
+/research_workspace_planning/restore_subset_check.json
+**/.env
+**/.env.*
+**/.venv/
+**/.uv-cache/
+**/__pycache__/
+**/*.pyc
+**/wandb/
+**/runs/
+**/tracking/

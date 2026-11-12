@@ -1,0 +1,31 @@
+{
+  "status": "hand-set numerical check only; no training or v2 task evaluation",
+  "lambda": 1,
+  "L": 3,
+  "sigma": 0.6,
+  "F_bound": [
+    -1.5,
+    0
+  ],
+  "equal_prior_occupancy_bound": 0.7310585786300049,
+  "quadrature": [
+    {
+      "nodes_per_component": 8,
+      "F": -0.8586094534874454,
+      "R_bank_context": 0.5517480312144029,
+      "positive_halfspace_mass": 0.6853866611843681
+    },
+    {
+      "nodes_per_component": 16,
+      "F": -0.858610744008608,
+      "R_bank_context": 0.5517494399048064,
+      "positive_halfspace_mass": 0.6853965089983836
+    },
+    {
+      "nodes_per_component": 32,
+      "F": -0.8586107432987977,
+      "R_bank_context": 0.5517494374999252,
+      "positive_halfspace_mass": 0.6853918021673269
+    }
+  ]
+}

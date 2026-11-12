@@ -1,0 +1,5 @@
+# Susulan skala: lebih banyak pasangan tersampel
+
+Dirancang selepas melihat keputusan run 1 juta pasangan; ini ujian susulan, bukan analisis yang telah ditetapkan sebelum run asal. Soalan: adakah menggunakan 5 juta pasangan latihan (berbanding 1 juta) membantu model Word2Vec-style dan neural pada tetapan yang sama? Kerja ini tidak mengasingkan saiz data daripada perubahan seed dan pemilihan, dan ia bukan reproduksi Word2Vec asal.
+
+Model dan data train sama prinsip: 50 juta aksara train, 10k vocab, D=100, lima negatif q∝freq^0.75, subsampling t=1e−5, Adam/SparseAdam, batch 1024. Naikkan pasangan disampel kepada 5 juta dan gunakan 2 epoch (10 juta presentation). Satu seed setiap model, supaya kos CPU bounded; pilihan checkpoint pada validation AUC sahaja. Validation baharu 80–85 juta aksara dan test baharu 85–90 juta, kawasan yang tidak digunakan dalam eksperimen sebelum ini mengikut rekod; pembahagian ini bukan standard dan mungkin mengandungi dokumen sama. Analogi Google telah dilihat sebelum susulan ini dan hanya rujukan eksploratori, bukan bukti bebas. Tiada dakwaan kepastian daripada satu seed. Semua checkpoint dilatih sebelum test dikira.

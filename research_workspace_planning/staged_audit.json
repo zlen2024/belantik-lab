@@ -1,0 +1,8 @@
+{
+  "staged_files": 1500,
+  "byte_mismatches": 0,
+  "non_regular_modes": [],
+  "forbidden_paths": [],
+  "git_remote_configured": false,
+  "notes": "Byte audit before committing; simple content scan is not a guarantee that all secrets are absent."
+}

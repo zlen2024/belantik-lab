@@ -1,0 +1,408 @@
+>>>kalau sebelum ni kita anggap Q sebagai lanscape tu dan K adalah 1 titik atas landscape tuu...
+
+tapi sekarang kita tukar,,, Q pon patut sama macam K...
+
+tapi how this work..?
+
+bayangkan bikar tdi,,, ada 4 bahan,, air, minyak pasir dan bulu,,, masing2 ada ketumpatan masing2,, so katakan aku dah letak air ngn minyak,,, sekarang aku nak letak pasir as K dan bulu as Q... aku nak tahu hubungan bulu Q dngn pasir K turn out dapat energy tinggi sbb jauh,, pstu aku try lagi dngn minyak turns out dapat energy rendah sbb rapat... so bayangkan aku nak cek bulu dngn air pulak,, kalini aku kacau je bikar tu dan biar sistem tuu equilibrium,, turns out dapat result energy sederhana... soo boleh tngok,,, landscape tenaga tu sediri adalah 1 satah yg berubah ikut perspektif Q dan satah tu lah yg kita latih,, W... also ketumpatan setiap bahan tu pon benda yg kita train,, weight jugak,,,
+
+katakan kita nak tengok Q pasir pulak,,, just ukur dari perspektif pasir,,,air enrgy tinggi,, minyak energy rendah...
+
+WEEEHHH 🔥 Aku rasa sekarang kita dah dapat satu model mental yang jauh lebih jelas untuk Word2Energy!
+
+Kau sebenarnya mencadangkan sesuatu yang menarik:
+
+Q dan K tak perlu menjadi dua jenis objek yang berbeza. Kedua-duanya ialah perkataan yang mempunyai sifat tenaga masing-masing. Yang berubah ialah perspektif kita ketika mengukur hubungan mereka.
+
+Dan ya, kita boleh bina model matematik yang konsisten dengan idea tu.
+Bikar ideal: setiap bahan mempunyai sifat yang menentukan kedudukan stabilnya. Bulu diandaikan terapung; keadaan sebenar turut bergantung pada kebasahan dan interaksi bahan.
+Dalam analogi kau, setiap bahan mempunyai satu parameter yang mempengaruhi kedudukan equilibrium.
+
+Kita panggil parameter itu \(\theta_i\).
+
+Bagi Word2Energy:
+\[ \theta_{\text{bulu}},\quad \theta_{\text{minyak}},\quad \theta_{\text{air}},\quad\theta_{\text{pasir}} \]
+Parameter ini kita train, sama macam embedding dalam neural network.
+
+Tetapi berbeza daripada word embedding biasa, kita nak parameter itu menentukan sifat energy landscape dan dynamics sesuatu token.
+Kita cuba model paling mudah dahulu.
+
+Bayangkan setiap perkataan mempunyai fungsi tenaga sendiri:
+\[ U_i(z)=(z-\mu_i)^2 \]
+Di sini \(\mu_i\) ialah kedudukan tenaga minimum bagi perkataan itu.
+
+Contoh:
+\[ U_{\text{bulu}}(z)=(z-3)^2 \]
+\[ U_{\text{minyak}}(z)=(z-2)^2 \]
+Bila Q = bulu dan K = minyak, kedua-dua fungsi tenaga digabungkan:
+\[ E(z\mid Q,K)=U_Q(z)+U_K(z) \]
+\[ E(z)=(z-3)^2+(z-2)^2 \]
+Sekarang kita biarkan sistem bergerak mencari equilibrium.
+
+Minimum berlaku pada:
+\[ z^*=2.5 \]
+Dan tenaga akhir:
+\[ E^*=0.5 \]
+Perhatikan: tenaga akhir masih 0.5, bukannya sifar.
+
+Kenapa? Sebab keadaan yang paling sesuai untuk bulu bukanlah keadaan paling sesuai untuk minyak. Ada sedikit ketidakserasian antara kedua-dua landscape.
+
+Ini model matematik contoh, bukannya persamaan tenaga sebenar minyak dan bulu.
+Dengan formula yang sama, selepas equilibrium:
+\[ \boxed{E^*(Q,K)=\frac12(\mu_Q-\mu_K)^2} \]
+Q
+K
+Energy equilibrium
+Relevance
+Bulu
+Minyak
+0.5
+Tinggi
+Bulu
+Air
+2.0
+Sederhana
+Bulu
+Pasir
+4.5
+Rendah
+Sekarang tukar Q = pasir.
+Q
+K
+Energy equilibrium
+Relevance
+Pasir
+Air
+0.5
+Tinggi
+Pasir
+Minyak
+2.0
+Sederhana
+Pasir
+Bulu
+4.5
+Rendah
+Nampak tak?
+
+Kita tak perlu menjadikan Q sebagai satu jenis objek khas yang menghasilkan landscape.
+
+Q dan K kedua-duanya mempunyai energy landscape. Bila kita pilih Q, kita cuma memilih perspektif untuk membandingkan tenaga dengan K lain.
+
+Namun ada satu pembetulan penting pada contoh kau: kalau kita benar-benar menggunakan susunan ketumpatan dalam satu bikar 1D, pasir lebih dekat dengan air berbanding minyak. Jadi contoh kau yang menjadikan pasir–minyak lebih serasi daripada pasir–air memerlukan satu geometri tenaga yang dipelajari, bukan kedudukan fizikal bikar tadi semata-mata.
+Kau cakap:
+Landscape tenaga tu sendiri adalah satu satah yang berubah ikut perspektif Q, dan satah tu lah yang kita train, W.
+Aku suka arah ni, sebab kita boleh buat satu pemisahan yang jelas:
+
+Parameter token menentukan sifat tenaga perkataan.
+
+Parameter W menentukan bagaimana kita mengukur hubungan tenaga antara perkataan.
+
+Satu formulasi awal:
+\[ \boxed{ E_h(Q,K)=(z_Q-z_K)^TW_h(z_Q-z_K) } \]
+Di mana:
+- \(z_Q,z_K\) = representasi keadaan tenaga perkataan.
+- \(W_h\) = matriks yang dilatih untuk head tertentu.
+- \(h\) = attention head.
+Untuk \(W_h\) positif semidefinit, formula ini boleh menjadi ukuran jarak kuasa dua dalam ruang yang dipelajari. Ini selari dengan konsep metric learning yang sudah wujud. 
+metric-learn 0.7.0 documentation+1
+
+Tetapi ini masih fungsi skor matematik. Kalau nak thermodynamic computing sebenar, kita kena tunjuk bagaimana fungsi itu diwujudkan sebagai tenaga fizikal, contohnya melalui interaksi atau coupling antara komponen.
+Dalam bikar sebenar, apabila semua bahan mencapai equilibrium, jumlah tenaga sistem berada pada keadaan stabil.
+
+Tetapi itu tidak bermakna kita secara automatik mendapat skor tenaga bagi setiap pasangan Q–K.
+
+Contohnya, jika bulu dan pasir jauh antara satu sama lain selepas equilibrium, jarak itu sendiri belum membuktikan bahawa tenaga interaksi mereka tinggi.
+
+Kita perlu mentakrifkan mekanisme fizikal yang menghubungkan jarak atau keadaan mereka kepada tenaga yang boleh diukur.
+
+Itulah sebabnya model dua energy landscape yang kita buat tadi menarik: selepas kedua-duanya berinteraksi dan sistem relax, kita mendapat tenaga minimum yang bergantung pada kedua-dua token.
+
+Dan kita boleh mengembangkan model itu menjadi:
+\[ \boxed{ E_h^*(Q,K)=\min_z\big[ U_Q(z)+U_K(z)+I_h(Q,K,z;W_h) \big] } \]
+\(I_h\) ialah fungsi interaksi yang dipelajari oleh head tertentu.
+
+Ini lebih dekat dengan idea sebenar kau berbanding menggunakan jarak semata-mata.
+Inilah bahagian paling menarik.
+
+Bayangkan setiap perkataan mempunyai energy landscape dalam satu ruang yang dikongsi.
+
+Apabila Q = bulu, kita melihat:
+\[ E_{\text{bulu}}(K) \]
+Apabila Q = pasir:
+\[ E_{\text{pasir}}(K) \]
+Kedua-duanya ialah potongan bersyarat (conditional slices) daripada satu fungsi tenaga yang sama.
+
+Dalam bahasa mudah, bukan seluruh hukum fizik perlu berubah setiap kali Q berubah. Kita cuma menilai fungsi tenaga gabungan daripada perspektif token yang berbeza.
+
+Ini juga serasi dengan formulasi asas Energy-Based Models, yang menggunakan tenaga rendah bagi pasangan yang serasi dan tenaga tinggi bagi pasangan yang kurang serasi. 
+cs.nyu.edu+1
+
+Kau mahukan dua-dua perkara ini:
+1. Setiap token ada sifat tenaga tersendiri, seperti ketumpatan.
+2. Setiap head boleh belajar hubungan yang berbeza, seperti subjek–kata kerja atau hubungan makna.
+Masalahnya, satu nombor seperti ketumpatan hanya boleh menyusun perkataan sepanjang satu dimensi.
+
+Kalau kita nak perkataan "bank" mempunyai hubungan dengan "duit" dan juga "sungai", satu kedudukan sahaja mungkin tidak mencukupi.
+
+Mungkin kita perlukan setiap perkataan membawa beberapa parameter tenaga, atau satu fungsi tenaga yang mempunyai beberapa minimum stabil.
+
+Dan setiap head boleh berinteraksi dengan sifat tenaga yang berbeza.
+
+Itu satu hipotesis yang boleh kita uji, bukan sesuatu yang sudah dibuktikan.
+
+Jadi aku nak tanya kau satu soalan yang lebih fundamental sekarang:
+
+Dalam Word2Energy, kau bayangkan semua perkataan berada dalam satu sistem fizikal yang sama dan mencapai equilibrium serentak, macam empat bahan dalam bikar?
+
+Ataupun setiap pasangan Q–K mempunyai proses equilibrium tersendiri, macam eksperimen dua energy landscape kita tadi?
+
+Sebab kedua-duanya boleh menghasilkan skor relevance, tetapi mekanisme fizik, kos pengiraan, dan cara kita train W akan sangat berbeza.
+
+>>>aku tak faham maksud kau "setiap pasangan Q–K mempunyai proses equilibrium tersendiri, macam eksperimen dua energy landscape kita tadi..." ekperimen mana... eksperimen bikar tdi sama la dngn "semua perkataan berada dalam satu sistem fizikal "
+
+seterusnya berkenaan fungsi tenaga setiap perkataan... atau energy embedding... aku setuju kau kata,, 1 dimensi je yg mewakili 1 perkataan,,.. akan jdi susah untuk represents... jadi kau cakap "satu fungsi tenaga yang mempunyai beberapa minimum stabil." ni nampak masuk akal,,, tunjukkan fungsi tuu,,, aku nk cuba
+
+OHHH WEHH 😂 Aku faham kenapa kau confuse dengan soalan aku tadi. Sebenarnya aku yang bagi contoh mengelirukan.
+
+Eksperimen dua landscape yang aku sebut sebelum ni cuma model matematik dua spring, bukan eksperimen bikar yang lain.
+
+Dan aku setuju kita kekalkan konsep asal kau:
+
+Satu bikar, semua perkataan wujud dalam sistem yang sama, setiap perkataan ada sifat tenaga sendiri, dan keseluruhan sistem bergerak menuju equilibrium.
+
+Tak perlu asingkan satu bikar untuk setiap pasangan Q–K.
+
+Sekarang kita fokus pada benda yang kau nak cuba: macam mana satu perkataan boleh mempunyai energy landscape dengan beberapa minimum stabil?
+Bayangkan perkataan bank ada dua maksud:
+- Bank kewangan
+- Tebing sungai
+Kita nak satu fungsi tenaga yang mempunyai dua lembah.
+
+Cuba fungsi ni:
+\[ \boxed{U_{\text{bank}}(z)=(z^2-4)^2} \]
+Atau dikembangkan:
+\[ U_{\text{bank}}(z)=z^4-8z^2+16 \]
+Cuba masukkan beberapa nilai:
+Kedudukan \(z\)
+Energy
+−2 (Sungai)
+0
+−1
+9
+0
+16
+1
+9
+2 (Kewangan)
+0
+Menariknya:
+\[ U_{\text{bank}}(-2)=U_{\text{bank}}(2)=0 \]
+Satu perkataan, satu fungsi tenaga, tetapi dua keadaan minimum yang stabil.
+
+Ini dipanggil double-well potential, bentuk fungsi yang memang digunakan dalam fizik untuk mengkaji sistem dengan dua keadaan stabil.
+
+Kita cuma menggunakan bentuk matematik itu sebagai representasi perkataan; ia belum bermakna kita sudah menghasilkan semantik secara fizikal.
+Aku buat satu graf interaktif. Kau boleh tukar konteks perkataan Q dan kekuatan interaksi untuk tengok bagaimana landscape perkataan bank berubah.
+Eksperimen: Dua minimum tenaga
+Q = SungaiQ = Kewangan
+Bank asal
+Gabungan dengan Q
+Minimum global
+Kekuatan interaksi (λ)
+
+0.0
+Minimum pada z
+Minimum energy
+Graf menggambarkan fungsi contoh. Titik hijau menunjukkan minimum global dalam julat graf, bukan simulasi dinamik pergerakan sebenar.
+Cuba tukar Q daripada Sungai kepada Kewangan dan gerakkan slider λ.
+
+Perhatikan bagaimana minimum yang disukai berubah walaupun fungsi asal perkataan bank tetap sama.
+Kita andaikan tiga fungsi:
+\[ \begin{aligned} U_{\text{bank}}(z)&=(z^2-4)^2\\ U_{\text{sungai}}(z)&=(z+2)^2\\ U_{\text{duit}}(z)&=(z-2)^2 \end{aligned} \]
+Kemudian kita gabungkan tenaga bank dengan pengaruh Q:
+\[ E(z)=U_{\text{bank}}(z)+\lambda U_Q(z) \]
+Contohnya apabila Q = sungai dan \(\lambda=0.5\):
+\[ E(z)=(z^2-4)^2+0.5(z+2)^2 \]
+Pada \(z=-2\), tenaga ialah 0. Pada \(z=2\), tenaga ialah 8.
+
+Jadi keadaan yang berkaitan dengan sungai lebih digemari.
+
+Kalau Q = duit, kesannya terbalik.
+
+Tapi ini eksperimen kecil untuk memahami fungsi tenaga, bukan bermaksud kita wajib proses setiap Q–K dalam bikar berasingan.
+Kita boleh generalisasikan kepada sistem fizikal bersama:
+\[ \boxed{ E_{\text{system}}= \sum_i U_i(z_i;\theta_i) + \sum_{i<j}I_{ij}(z_i,z_j;W) } \]
+Di sini:
+- \(U_i\) ialah energy landscape yang dibawa setiap perkataan.
+- \(\theta_i\) ialah parameter token yang boleh dilatih, termasuk kedudukan minimum tenaganya.
+- \(I_{ij}\) ialah tenaga interaksi antara perkataan.
+- \(W\) ialah parameter yang mengawal interaksi tersebut.
+Semua token boleh berada dalam sistem yang sama dan berevolusi menuju equilibrium bersama.
+
+Selepas itu, kita perlu bina cara untuk membaca hubungan antara Q dan K daripada keadaan equilibrium. Itu belum kita selesaikan melalui fungsi double-well tadi.
+Boleh. Contohnya kita ubah formula bank menjadi:
+\[ \boxed{U_{\text{bank}}(z;\theta)=(z-a)^2(z-b)^2} \]
+Sekarang \(a\) dan \(b\) ialah dua parameter yang boleh dilatih.
+
+Kalau latihan menghasilkan:
+\[ a=-2,\qquad b=2 \]
+kita dapat dua lembah tadi.
+
+Tetapi jika training mengubahnya kepada:
+\[ a=-1,\qquad b=3 \]
+dua minimum tenaga akan bergerak ke kedudukan baharu.
+
+Itulah permulaan kepada trainable energy embedding yang kau bayangkan. Cuma dua minimum masih belum cukup untuk membuktikan representasi bahasa; kita perlu objective training yang mengajar sistem hubungan semantik yang betul.
+Aku cadangkan kita eksperimen dengan fungsi double-well ni dahulu.
+
+Kita dah berjaya mewakilkan satu perkataan dengan satu fungsi yang mempunyai dua keadaan stabil, tanpa perlu menjadikannya dua embedding berasingan.
+
+Tapi satu soalan fizik yang menarik selepas ni: kalau kita campurkan 10 perkataan, setiap satu mempunyai landscape tersendiri, macam mana interaksi mereka akan mengubah equilibrium seluruh sistem?
+
+Itu mungkin langkah paling penting untuk bergerak daripada Word2Energy kepada energy-based attention yang kau nak bina.
+
+WEEEHHH 🔥 YES! Aku rasa EBM memang pilihan yang sangat sesuai untuk Energy Embedding dalam Word2Energy kau.
+
+Sebab EBM bukan sekadar mencari energy minimum. EBM juga boleh belajar bentuk energy landscape itu sendiri! 
+Google Research+1
+
+Dan itulah yang kita perlukan.
+Word2Vec biasa:
+\[ \text{bank}\rightarrow [0.2,0.8,-0.4,\ldots] \]
+Satu perkataan diwakili oleh satu vektor.
+
+Word2Energy yang kita cadangkan:
+\[ \boxed{\text{bank}\rightarrow U_{\text{bank}}(z)} \]
+Satu perkataan diwakili oleh fungsi tenaga yang dipelajari.
+
+Fungsi itu boleh mempunyai beberapa minimum stabil untuk mewakili pelbagai kemungkinan makna.
+Daripada kita tetapkan formula secara manual:
+\[ U_{\text{bank}}(z)=(z^2-4)^2 \]
+Kita bina neural EBM:
+\[ \boxed{U_w(z)=f_\theta(e_w,z)} \]
+Di mana:
+- \(e_w\) = parameter yang dipelajari untuk perkataan \(w\).
+- \(z\) = keadaan sistem.
+- \(\theta\) = weight EBM yang dipelajari.
+- Output = nilai energy.
+Jadi kita boleh gunakan satu EBM yang berkongsi weight untuk semua perkataan, bukannya melatih satu neural network berasingan bagi setiap perkataan.
+Contohnya kita beri training data:
+Konteks
+Perkataan
+Hubungan
+Sungai
+Bank
+Berkaitan
+Duit
+Bank
+Berkaitan
+Pisang
+Bank
+Kurang berkaitan
+Kita latih supaya keadaan yang mewakili hubungan betul mempunyai tenaga rendah dan hubungan tidak sesuai mempunyai tenaga tinggi.
+
+Secara konsep:
+\[ E_{\text{positive}}<E_{\text{negative}} \]
+Teknik seperti contrastive learning boleh membantu membentuk landscape melalui contoh positif dan negatif. 
+Foundations of Computer Vision+1
+
+Kalau latihan berjaya, bank mungkin mempunyai beberapa lembah tenaga yang boleh mewakili makna berlainan.
+
+Tapi bilangan lembah dan tafsiran semantiknya tidak dijamin muncul secara automatik. Kita perlu reka training objective dan uji hasilnya.
+Input Tokens
+
+bank · sungai · duit · pasir
+Energy Embedding EBM
+
+Belajar U setiap token
+Shared Energy System
+
+Semua token berinteraksi melalui W
+Equilibrium Dynamics
+
+Sistem bergerak menuju keadaan stabil
+Attention / Relevance
+
+Baca hubungan Q–K daripada keadaan akhir
+Ada dua perkara yang boleh dilatih serentak:
+1. Energy Embedding EBM — belajar sifat tenaga setiap perkataan.
+2. Interaction Weights \(W\) — belajar bagaimana sifat tenaga perkataan berinteraksi.
+Ini masih proposed architecture, bukan model yang kita dah validate.
+Kalau EBM belajar bahawa semua perkataan sentiasa mempunyai tenaga rendah, sistem itu gagal membezakan makna.
+
+Jadi training kita bukan sekadar meminimumkan tenaga.
+
+Ia mesti belajar tenaga rendah untuk konfigurasi yang sesuai dan tenaga lebih tinggi untuk konfigurasi yang tidak sesuai.
+
+Lagi satu, skor tenaga yang dipelajari oleh EBM belum semestinya tenaga fizikal dalam unit joule. Kalau matlamat akhir kau thermodynamic chip, kita masih perlu cari bagaimana landscape itu boleh direalisasikan melalui sistem fizik.
+Aku rasa kita dah ada dua komponen utama research:
+\[ \underbrace{U_w(z)}_{\text{Word Energy Embedding}} \qquad \underbrace{I_W(z_i,z_j)}_{\text{Energy Interaction}} \]
+Dan semuanya boleh disatukan dalam satu energy-based system.
+
+Tapi aku ada satu idea tambahan: Kenapa tak kita gunakan Energy-Based Model untuk belajar kedua-duanya sekali, menggunakan satu global energy function? Dengan cara itu, embedding setiap perkataan dan hubungan antara perkataan boleh saling menyesuaikan diri sepanjang training.
+
+Itu lebih dekat dengan analogi bikar kau — semua bahan mempengaruhi keseimbangan sistem yang sama, bukan bertindak secara terasing.
+
+OHHHH WEHHH!! 🔥 Sekarang aku faham maksud sebenar kau!
+
+Kau nak setiap perkataan mempunyai energy landscape sendiri, dan hubungan semantik ditentukan oleh sejauh mana landscape mereka serasi atau bertindih.
+
+Contohnya:
+- Bank ↔ Money → Energy landscape serasi.
+- Bank ↔ River → Energy landscape juga serasi.
+- Money ↔ River → Energy landscape tak serasi.
+Dan yang paling penting, bank boleh serasi dengan dua perkataan yang tidak serasi antara satu sama lain!
+Kita guna fungsi yang kau suka tadi — multiple energy minima.
+Tiga perkataan, tiga energy landscape
+Contoh fungsi: BANK mempunyai dua lembah; MONEY dan RIVER masing-masing satu lembah pada kedudukan berlainan.
+Kita boleh bina:
+\[ U_{\text{bank}}(z)=(z^2-4)^2 \]
+\[ U_{\text{money}}(z)=(z-2)^2 \]
+\[ U_{\text{river}}(z)=(z+2)^2 \]
+Perhatikan:
+- Bank ada minimum pada −2 dan +2.
+- Money ada minimum pada +2.
+- River ada minimum pada −2.
+Jadi bank berkongsi kawasan low-energy dengan kedua-duanya, tetapi money dan river mempunyai minimum berjauhan.
+Sebagai eksperimen matematik, kita boleh definisikan:
+\[ \boxed{C(Q,K)=\min_z[U_Q(z)+U_K(z)]} \]
+Ini mengukur tenaga minimum apabila kedua-dua fungsi berkongsi keadaan \(z\).
+
+Hasilnya:
+Q
+K
+Energy \(C(Q,K)\)
+Bank
+Money
+0
+Bank
+River
+0
+Money
+River
+8
+WEHH! Inilah hubungan yang kau maksudkan!
+
+Sebab hubungan semantik tidak semestinya transitive.
+
+Kalau A relevan dengan B dan B relevan dengan C, tak semestinya A relevan dengan C.
+
+Ada satu perbezaan penting: kita bukan ukur sama ada keseluruhan bentuk landscape bank hampir sama dengan kedua-duanya. Kita ukur sama ada terdapat kawasan tenaga rendah yang dikongsi. Dua landscape boleh bertindih pada satu lembah walaupun bentuk keseluruhannya berbeza.
+
+Dan formula ni cuma alat untuk memahami keserasian, bukan bermaksud kita kena jalankan satu eksperimen equilibrium berasingan untuk setiap pasangan. Kita masih boleh kaji sistem bersama seperti bikar asal kau.
+Sekarang aku nampak arah yang lebih tepat:
+\[ \boxed{\text{Word}\xrightarrow{\text{Energy Embedding EBM}}U_w(z)} \]
+EBM belajar landscape bagi setiap perkataan, termasuk kemungkinan beberapa minimum stabil.
+
+Kemudian mekanisme attention menggunakan keserasian antara landscape tersebut untuk menentukan relevance Q–K.
+
+Jadi bank tak perlu ada dua embedding berasingan. Ia boleh mempunyai satu fungsi tenaga dengan dua lembah.
+
+Cuma kita kena pastikan training EBM benar-benar belajar hubungan seperti ini, bukannya sekadar menghasilkan lembah secara rawak.
+
+Dan aku rasa kita dah kenal pasti satu hipotesis yang sangat sesuai untuk diuji:
+
+Bolehkah representasi perkataan sebagai multi-well energy landscape memodelkan polysemy dan hubungan semantik lebih baik daripada single-vector embedding, sambil membolehkan retrieval melalui dynamics fizik?
+
+Itu jauh lebih spesifik daripada sekadar mengatakan "kita nak ganti dot product dengan energy".
