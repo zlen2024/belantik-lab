@@ -18,7 +18,11 @@ Implementation entry points:
 - `word_energy/ising/exact_training.py`: exact-enumeration F2/F3 contrastive ranking pilot. It freezes grammar-filtered negatives, two cross-pool corruptions per window, batch schedules and validation checkpoint selection. It is deliberately not sampler/CD/PCD training.
 - `scripts/train_ising_exact_smoke.py --full --seed 17 --evaluate-test`: runs one frozen-budget precheck and explicitly opens its holdout test split only after validation selection. The generated checkpoint and JSON are local experiment artifacts, not source.
 - `scripts/log_ising_exact_smoke.py --full --seed 17`: logs an existing precheck artifact to the explicitly configured local MLflow database.
+- `word_energy/energy_embedding/train_lexical.py`: constrained D=1/M=2 Gaussian-mixture lexical baseline using differentiable, analytic overlap. It deliberately stops before joint-window inference.
+- `scripts/train_gaussian_lexical.py --seed 17 --evaluate-test`: runs the matching Gaussian lexical precheck; `scripts/log_gaussian_lexical.py` records the artifact in local MLflow.
 
 Current status: three exact-gradient synthetic prechecks (seeds 17, 29 and 43) have been recorded locally. Seeds 17 and 43 reached the toy sense/retrieval gate, while seed 29 did not; therefore the three-seed Ising pilot does **not** pass its preregistered gate. Baselines, the lexical-positive permutation control, sampler audit and physical-hardware mapping are still outstanding. The local MLflow experiment `word-energy-exact-training` is the record of individual runs.
+
+The lexical Gaussian baseline reached a holdout retrieval AUC of 1.0 for each of the same three seeds. This does not compare contextual sense handling: it has no Gaussian joint system yet. Its MLflow experiment is `word-energy-gaussian-lexical`.
 
 Review scores assess the plans, not training results or evidence of chip compatibility. Preserve the original protocols and previously used test sets; read the plan before running experiments. The legacy source remains at `../../word2energy` while archive recovery is being verified. The direct tracking dependency is listed in `requirements-tracking.txt`; the tested environment freeze and local database are in `tracking/` and must be backed up rather than committed.
