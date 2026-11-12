@@ -71,6 +71,23 @@ Pre-commit runs black, isort (black profile), flake8 and pyright. Avoid `--no-ve
 
 For each task, choose the relevant skill below and read its `SKILL.md`; load supporting references only when needed. Codex uses `.agents/skills/` and explicit `$skill-name` mentions; Claude Code uses `.claude/skills/` and `/skill-name`. Where several skills fit, pick the most specific one or combine only the necessary skills. For any video or animation request, start at `/hyperframes`, the entry point that routes to the others.
 
+### Primary research routing: the 10 core skills
+
+For Word Energy, Spring Compression, and future ML research, select from these **10 core skills** first. They are intentionally listed together so an agent can choose the right workflow before it starts work.
+
+| Skill | Choose it when the task is about |
+|---|---|
+| [paper-reader](.agents/skills/paper-reader/SKILL.md) | Reading, explaining, or making a practical note from one paper, PDF, arXiv source, or equation. |
+| [deeppapernote](.agents/skills/deeppapernote/SKILL.md) | Producing a detailed, evidence- and figure-aware research note. |
+| [paper2code](.agents/skills/paper2code/SKILL.md) | Turning a paper or a specified algorithm into verified executable code. |
+| [autoresearch](.agents/skills/autoresearch/SKILL.md) | Running a bounded research loop with hypotheses, experiments, saved state, and a synthesis. |
+| [pytorch-lightning](.agents/skills/pytorch-lightning/SKILL.md) | Building or scaling an ordinary PyTorch training loop with checkpoints and callbacks. |
+| [mlflow](.agents/skills/mlflow/SKILL.md) | Recording and comparing experiment parameters, metrics, artifacts, and runs. |
+| [tensorboard](.agents/skills/tensorboard/SKILL.md) | Inspecting learning curves, model graphs, histograms, or profiling data. |
+| [ebm-training](.agents/skills/ebm-training/SKILL.md) | Choosing, training, checking, or debugging an Energy-Based Model. Required for EBM comparisons and training decisions. |
+| [thrml](.agents/skills/thrml/SKILL.md) | Implementing an Ising/Boltzmann model, block Gibbs sampling, or the THRML path toward Extropic hardware. |
+| [torx](.agents/skills/torx/SKILL.md) | Implementing Torx stochastic circuits, p-bits/p-dits, or directed factor graphs. |
+
 ### ML research and paper reading
 
 Saved research notes default to **Bahasa Melayu with English technical terms**, as requested by the user. Preserve mathematical notation and code identifiers. Use one primary reading workflow per task unless a comparison is requested.
@@ -84,9 +101,9 @@ Saved research notes default to **Bahasa Melayu with English technical terms**, 
 | [pytorch-lightning](.agents/skills/pytorch-lightning/SKILL.md) | Lightning training loops, callbacks, checkpoints and distributed training when relevant to the project. |
 | [mlflow](.agents/skills/mlflow/SKILL.md) | Track parameters, metrics, artifacts and compare experiment runs. |
 | [tensorboard](.agents/skills/tensorboard/SKILL.md) | Inspect learning curves, histograms, model graphs and profiling data. |
-| [ml-research-paper-reading](.agents/skills/ml-research-paper-reading/SKILL.md) | Shared evidence/evaluation discipline and routing across the above workflows, THRML and Manim. |
+| [ml-research-paper-reading](.agents/skills/ml-research-paper-reading/SKILL.md) | Shared evidence/evaluation discipline and routing across the above workflows, THRML and Manim. It is a protocol layer, so it is not counted among the 10 core skills above. |
 
-All eight research skills are available through both workspace skill roots. `research-skills.lock.json` records the seven upstream sources, pinned commits and installed file hashes. Local adaptations are documented in each entrypoint. Upstream code has been installed, not a complete training/PDF software environment. Resolve script paths from the installed directory; use Git Bash for shell scripts and the project Python environment. For standalone tasks load only the relevant skill, not all eight.
+The seven general research skills are available through both workspace skill roots; `ebm-training`, `thrml`, and `torx` complete the 10 core skills. `research-skills.lock.json` records the seven upstream sources, pinned commits and installed file hashes. Local adaptations are documented in each entrypoint. Upstream code has been installed, not a complete training/PDF software environment. Resolve script paths from the installed directory; use Git Bash for shell scripts and the project Python environment. For standalone tasks load only the relevant skill, not all 10.
 
 Read [ml-research-paper-reading](.agents/skills/ml-research-paper-reading/SKILL.md) for paper explanations, critical reading, paper-to-code implementation, reproduction, or ML experiment design/evaluation. Its Claude path is `.claude/skills/ml-research-paper-reading/SKILL.md`.
 
