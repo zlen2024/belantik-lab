@@ -89,3 +89,11 @@ Critic: GPT-6.1 Sol, reasoning ultra. Tindakan daripada critic sebelumnya: nilai
 **Verdict critic:** Validation screen tiga-seed gagal kerana seed 43; jangan purata untuk menyembunyikan kegagalan. Claim bahawa joint adaptation meningkatkan sense classification dalam pilot ini tidak disokong. Yang disokong lebih sempit: contextual coupling boleh mengubah occupancy/prediction pada frozen lexical geometry bagi seed 17 dan 29. Test contextual Gaussian kekal belum dibuka; ia bukan alat untuk menyelamatkan claim selepas validation gagal.
 
 **Had provenance:** Contract MLflow bagi tiga control direkod oleh environment logging yang melaporkan `jax: not-installed`; ini tidak menerangkan result berpasangan, tetapi contract control sahaja bukan capture lengkap environment evaluator.
+
+## Supersession selepas repair boundary — 13 November 2026
+
+Critic: GPT-6.1 Sol, reasoning ultra. Semakan mendapati tolerance mutlak dalam pembinaan region boleh menambah boundary palsu di Gaussian tail dan memberi half-credit kepada interval besar. Ia ialah ralat measurement, bukan kegagalan seed 43 atau M4.
+
+Repair menggunakan perbandingan strict `qF > qR`, genuine sign crossings sahaja, serta interior probe jika midpoint underflow. Regression test ditambah. Semua checkpoint M2 lexical dan joint yang telah disimpan diaudit semula pada validation tanpa retrain: accuracy kini `1.0, 1.0, 1.0`, dengan max region delta di bawah `4.4e-7`. M4 juga `1.0, 1.0, 1.0`; M1 `0.5, 0.5, 1.0` selepas audit stabil.
+
+Semua verdict terdahulu yang menyatakan seed 43/M4 gagal, atau menyimpulkan bahawa geometry lexical seed 43 bias kepada river, adalah **superseded measurement errors** dan tidak boleh dirujuk sebagai bukti saintifik. Critic membenarkan holdout contextual M2 dibuka hanya selepas manifest checkpoint/map/evaluator dibekukan. Manifest: [M2_CONTEXTUAL_HOLDOUT_MANIFEST.md](../../M2_CONTEXTUAL_HOLDOUT_MANIFEST.md).
