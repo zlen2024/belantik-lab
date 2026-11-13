@@ -1,6 +1,12 @@
 import numpy as np
 
-from word_energy.energy_embedding import ActiveWindowSystem, GaussianMixtureLandscape, analytic_overlap
+from word_energy.energy_embedding import (
+    ActiveWindowSystem,
+    GaussianMixtureLandscape,
+    analytic_overlap,
+    gaussian_hermite_joint_reference,
+)
+from word_energy.energy_embedding.reference import grid_reference_1d
 
 
 def _landscape() -> GaussianMixtureLandscape:
@@ -35,4 +41,29 @@ def test_window_readout_is_symmetric_and_uses_one_sample_tensor() -> None:
     assert np.allclose(readout, readout.T)
     assert np.allclose(np.diag(readout), 1.0)
     assert 0.0 <= readout[0, 1] <= 1.0
+
+
+def test_gaussian_hermite_joint_reference_has_normalised_lambda_zero_limit() -> None:
+    landscape = _landscape()
+    system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=0.0)
+    result = gaussian_hermite_joint_reference(system, np.array([0, 1, 0]), order=8)
+    assert abs(result.log_z) < 1e-12
+    assert abs(result.free_energy) < 1e-12
+    assert result.component_assignments == 8
+    assert result.quadrature_points == 512
+    assert np.allclose(np.diag(result.readout), 1.0)
+    assert np.all((result.readout[np.triu_indices(3, k=1)] > 0.0) & (result.readout[np.triu_indices(3, k=1)] < 1.0))
+
+
+def test_gaussian_hermite_joint_reference_matches_grid_for_small_window() -> None:
+    landscape = GaussianMixtureLandscape(
+        logits=np.array([[0.0], [0.0]]),
+        means=np.array([[[-0.4]], [[0.7]]]),
+        variances=np.array([[[0.5]], [[0.6]]]),
+    )
+    system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=0.6)
+    hermite = gaussian_hermite_joint_reference(system, np.array([0, 1]), order=12)
+    grid_log_z, grid_readout = grid_reference_1d(system, np.array([0, 1]), np.linspace(-8.0, 8.0, 121))
+    assert np.isclose(hermite.log_z, grid_log_z, atol=5e-3)
+    assert np.allclose(hermite.readout, grid_readout, atol=5e-3)
 
