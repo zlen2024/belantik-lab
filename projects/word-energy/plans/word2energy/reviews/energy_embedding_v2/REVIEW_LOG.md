@@ -73,3 +73,19 @@ Critic: GPT-6.1 Sol, reasoning ultra. Skop: discrepancy antara protokol checkpoi
 **Tindakan terikat:** repair measurement. Trainer ditukar untuk menilai setiap checkpoint validation dengan adaptive train-anchor region evaluator, memerlukan gate numerik, dan memilih accuracy → loss → step. Seed 17 diulang tanpa membuka test: kelima-lima checkpoint (20 hingga 100) lulus gate dan memperoleh accuracy `1.0`; loss memilih langkah 100. Artifact latihan baharu direkodkan dalam MLflow run `99df11c7083944fabb947ee637628e00`.
 
 **Kesimpulan hipotesis:** Tiada prediction saintifik gagal. Satu seed validation menyokong peralihan region mengikut konteks pada toy ini sahaja. Ia belum menunjukkan manfaat training berbanding geometri rawak atau contextual vector baseline, belum tiga seed, belum sampler, dan bukan bukti hardware.
+
+## Checkpoint control geometry beku — 13 November 2026
+
+Critic: GPT-6.1 Sol, reasoning ultra. Tindakan daripada critic sebelumnya: nilai checkpoint lexical sedia ada pada validation dengan map train-anchor dan audit adaptif yang sama, tanpa retrain atau test.
+
+| Seed | Accuracy lexical λ0 → λ1 | Accuracy joint λ1 | Gain lexical → joint |
+|---|---:|---:|---:|
+| 17 | 0.5 → 1.0 | 1.0 | 0.08319 → 0.08703 |
+| 29 | 0.5 → 1.0 | 1.0 | 0.09120 → 0.09544 |
+| 43 | 0.5 → 0.5 | 0.5 | 0.04347 → 0.04528 |
+
+**Fakta diukur:** Semua control lulus audit node/domain/adaptive. Joint adaptation menambah zero accuracy untuk setiap seed. Pertambahan gain posterior `0.003844`, `0.004234`, dan `0.001818` lebih besar daripada sensitiviti integrasi yang direkodkan, tetapi semuanya ialah ukuran validation di bawah map checkpoint masing-masing.
+
+**Verdict critic:** Validation screen tiga-seed gagal kerana seed 43; jangan purata untuk menyembunyikan kegagalan. Claim bahawa joint adaptation meningkatkan sense classification dalam pilot ini tidak disokong. Yang disokong lebih sempit: contextual coupling boleh mengubah occupancy/prediction pada frozen lexical geometry bagi seed 17 dan 29. Test contextual Gaussian kekal belum dibuka; ia bukan alat untuk menyelamatkan claim selepas validation gagal.
+
+**Had provenance:** Contract MLflow bagi tiga control direkod oleh environment logging yang melaporkan `jax: not-installed`; ini tidak menerangkan result berpasangan, tetapi contract control sahaja bukan capture lengkap environment evaluator.

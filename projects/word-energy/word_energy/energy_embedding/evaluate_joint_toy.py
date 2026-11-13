@@ -76,6 +76,7 @@ def evaluate_joint_context(
     system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=config.coupling, length_scale=config.length_scale)
     lambda_zero_system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=0.0, length_scale=config.length_scale)
     credits: dict[str, list[float]] = {"F": [], "R": []}
+    prior_credits: dict[str, list[float]] = {"F": [], "R": []}
     posterior: list[float] = []
     prior: list[float] = []
     context_refinement_deltas: list[float] = []
@@ -122,6 +123,7 @@ def evaluate_joint_context(
         true_mass = f_mass if family == "F" else 1.0 - f_mass
         true_prior = f_prior if family == "F" else 1.0 - f_prior
         credits[family].append(1.0 if true_mass > 0.5 else 0.5 if true_mass == 0.5 else 0.0)
+        prior_credits[family].append(1.0 if true_prior > 0.5 else 0.5 if true_prior == 0.5 else 0.0)
         posterior.append(true_mass)
         prior.append(true_prior)
         context_refinement_deltas.append(abs(f_mass - refined_context.finance_probability))
@@ -133,6 +135,10 @@ def evaluate_joint_context(
     max_domain_delta = float(np.max(domain_refinement_deltas))
     return {
         f"{split}.macro_sense_accuracy": float(np.mean([np.mean(credits["F"]), np.mean(credits["R"])])),
+        f"{split}.lambda1_macro_sense_accuracy": float(np.mean([np.mean(credits["F"]), np.mean(credits["R"])])),
+        f"{split}.lambda0_macro_sense_accuracy": float(
+            np.mean([np.mean(prior_credits["F"]), np.mean(prior_credits["R"])])
+        ),
         f"{split}.correct_region_posterior": float(np.mean(posterior)),
         f"{split}.correct_region_prior": float(np.mean(prior)),
         f"{split}.correct_region_gain_lambda1_minus_lambda0": float(np.mean(posterior) - np.mean(prior)),

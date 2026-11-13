@@ -20,11 +20,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--test", action="store_true", help="Explicitly evaluate the held-out split after validation protocol is frozen.")
+    parser.add_argument(
+        "--checkpoint-kind",
+        choices=("joint", "lexical"),
+        default="joint",
+        help="'lexical' is the frozen-geometry control; it does not retrain the joint model.",
+    )
     parser.add_argument("--order", type=int, default=8)
     parser.add_argument("--refinement-order", type=int, default=10)
     arguments = parser.parse_args()
     split = "test" if arguments.test else "validation"
-    checkpoint = PROJECT_ROOT / "experiments" / "runs" / f"gaussian-joint-seed{arguments.seed}.npz"
+    checkpoint = PROJECT_ROOT / "experiments" / "runs" / f"gaussian-{arguments.checkpoint_kind}-seed{arguments.seed}.npz"
     raw = dict(np.load(checkpoint))
     config = GaussianJointConfig(seed=arguments.seed)
     metrics = evaluate_joint_context(
@@ -35,13 +41,18 @@ if __name__ == "__main__":
         refinement_order=arguments.refinement_order,
     )
     artifact = {
-        "kind": "Gaussian joint train-anchor region evaluation; adaptive central integration and contextual quadrature audit required before semantic claim",
+        "kind": (
+            "Gaussian joint train-anchor region evaluation; adaptive central integration and contextual quadrature audit required before semantic claim"
+            if arguments.checkpoint_kind == "joint"
+            else "Frozen Gaussian lexical-geometry contextual control; no joint retraining, adaptive region audit required"
+        ),
+        "checkpoint_kind": arguments.checkpoint_kind,
         "checkpoint": checkpoint.name,
         "split": split,
         "order": arguments.order,
         "refinement_order": arguments.refinement_order,
         "metrics": metrics,
     }
-    target = PROJECT_ROOT / "experiments" / "runs" / f"gaussian-joint-{split}-evaluation-seed{arguments.seed}.json"
+    target = PROJECT_ROOT / "experiments" / "runs" / f"gaussian-{arguments.checkpoint_kind}-{split}-evaluation-seed{arguments.seed}.json"
     target.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
     print(json.dumps(artifact, indent=2))
