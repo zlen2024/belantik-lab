@@ -4,6 +4,7 @@ from word_energy.energy_embedding import (
     ActiveWindowSystem,
     GaussianMixtureLandscape,
     analytic_overlap,
+    gaussian_hermite_center_marginal_1d,
     gaussian_hermite_joint_reference,
 )
 from word_energy.energy_embedding.reference import grid_reference_1d
@@ -66,4 +67,12 @@ def test_gaussian_hermite_joint_reference_matches_grid_for_small_window() -> Non
     grid_log_z, grid_readout = grid_reference_1d(system, np.array([0, 1]), np.linspace(-8.0, 8.0, 121))
     assert np.isclose(hermite.log_z, grid_log_z, atol=5e-3)
     assert np.allclose(hermite.readout, grid_readout, atol=5e-3)
+
+
+def test_gaussian_hermite_center_marginal_is_normalised() -> None:
+    landscape = _landscape()
+    system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=1.0)
+    marginal = gaussian_hermite_center_marginal_1d(system, np.array([0, 1, 0]), order=8)
+    assert np.isclose(np.sum(marginal.weights), 1.0)
+    assert marginal.states.shape == marginal.weights.shape
 

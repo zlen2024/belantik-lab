@@ -22,6 +22,14 @@ class GaussianHermiteJointReference:
     quadrature_points: int
 
 
+@dataclass(frozen=True)
+class GaussianHermiteCenterMarginal:
+    """Weighted central-token states from one shared joint quadrature."""
+
+    states: np.ndarray
+    weights: np.ndarray
+
+
 def gaussian_hermite_joint_reference(
     system: ActiveWindowSystem,
     tokens: np.ndarray,
@@ -94,6 +102,54 @@ def gaussian_hermite_joint_reference(
         component_assignments=assignment_count,
         quadrature_points=point_count,
     )
+
+
+def gaussian_hermite_center_marginal_1d(
+    system: ActiveWindowSystem,
+    tokens: np.ndarray,
+    *,
+    order: int = 12,
+    max_terms: int = 65_536,
+) -> GaussianHermiteCenterMarginal:
+    """Return the exact-for-quadrature central marginal for a three-token window.
+
+    The caller can apply a train-derived region map to these weighted states;
+    no generator family label is used while constructing the marginal.
+    """
+    tokens = np.asarray(tokens, dtype=np.int64)
+    if tokens.shape != (3,):
+        raise ValueError("The first contextual marginal reference expects exactly three tokens")
+    if system.landscape.dimension != 1:
+        raise ValueError("The first contextual marginal reference is restricted to D=1")
+    assignments = np.asarray(list(product(range(system.landscape.components), repeat=3)), dtype=np.int64)
+    nodes, node_weights = np.polynomial.hermite.hermgauss(order)
+    node_grid = np.asarray(list(product(nodes, repeat=3)), dtype=np.float64)
+    if len(assignments) * len(node_grid) > max_terms:
+        raise ValueError("Quadrature term budget exceeded")
+    quadrature_weights = np.prod(
+        np.asarray(list(product(node_weights / np.sqrt(np.pi), repeat=3)), dtype=np.float64), axis=1
+    )
+    positions = np.broadcast_to(np.arange(3), assignments.shape)
+    means = system.landscape.means[tokens][positions, assignments]
+    standard_deviations = np.sqrt(system.landscape.variances[tokens][positions, assignments])
+    states = means[:, None, :, :] + np.sqrt(2.0) * standard_deviations[:, None, :, :] * node_grid[None, :, :, None]
+    mixture_weights = np.prod(
+        np.asarray(
+            [system.landscape.weights(int(token))[assignments[:, position]] for position, token in enumerate(tokens)]
+        ),
+        axis=0,
+    )
+    interaction = np.zeros((len(assignments), len(node_grid)), dtype=np.float64)
+    for left in range(3):
+        for right in range(left + 1, 3):
+            interaction += system.kernel(states[:, :, left], states[:, :, right])
+    log_terms = (
+        np.log(mixture_weights)[:, None]
+        + np.log(quadrature_weights)[None, :]
+        + system.coupling * interaction / 2.0
+    )
+    normalised = np.exp(log_terms - logsumexp(log_terms))
+    return GaussianHermiteCenterMarginal(states=states[:, :, 0, 0].reshape(-1), weights=normalised.reshape(-1))
 
 
 def grid_reference_1d(system: ActiveWindowSystem, tokens: np.ndarray, grid: np.ndarray) -> tuple[float, np.ndarray]:
