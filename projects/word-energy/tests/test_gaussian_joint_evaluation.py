@@ -1,6 +1,7 @@
 import numpy as np
 
 from word_energy.energy_embedding.evaluate_joint_toy import evaluate_joint_context
+from word_energy.energy_embedding.reference import _sense_boundaries_1d
 from word_energy.energy_embedding.train_joint_toy import GaussianJointConfig
 from word_energy.synthetic import vocabulary
 
@@ -27,3 +28,9 @@ def test_gaussian_joint_context_evaluation_uses_explicit_validation_split() -> N
     assert metrics["validation.region_max_domain_delta"] <= 1.0
     assert metrics["validation.region_max_adaptive_integration_error"] <= 1.0
     assert metrics["validation.region_max_mass_delta"] <= 1.0
+
+
+def test_density_scale_change_without_crossing_does_not_create_a_boundary() -> None:
+    q_finance = lambda points: 1e-4 * np.exp(-np.asarray(points) ** 2)
+    q_river = lambda points: 0.5e-4 * np.exp(-np.asarray(points) ** 2)
+    assert _sense_boundaries_1d(q_finance, q_river, -15.0, 15.0, grid_size=1025) == ()

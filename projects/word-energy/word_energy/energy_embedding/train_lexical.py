@@ -1,9 +1,10 @@
 """Exact analytic-overlap lexical trainer for the frozen Gaussian baseline.
 
-This is the lexical stage only: a D=1, M=2 normalised mixture per word,
-trained with the same synthetic pairs, negatives, schedules and validation
-selection as the Ising pilot.  It intentionally does not claim joint-window
-equilibrium or thermodynamic-hardware execution.
+This is the lexical stage only: a D=1 normalised mixture per word, trained
+with the same synthetic pairs, negatives, schedules and validation selection
+as the Ising pilot.  The frozen joint reference starts at M=2; the lexical
+capacity ablation also permits M=1 and M=4.  It intentionally does not claim
+joint-window equilibrium or thermodynamic-hardware execution.
 """
 
 from __future__ import annotations
@@ -128,8 +129,8 @@ def _copy(raw) -> dict[str, np.ndarray]:
 
 def train_lexical(config: GaussianLexicalConfig = GaussianLexicalConfig()) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
     """Train the preregistered lexical-only Gaussian baseline with exact overlap."""
-    if (config.dimension, config.components) != (1, 2):
-        raise ValueError("The frozen first Gaussian lexical pilot is D=1, M=2.")
+    if config.dimension != 1 or config.components not in {1, 2, 4}:
+        raise ValueError("The lexical capacity ablation is restricted to D=1 and M in {1, 2, 4}.")
     jax, jnp, optax = _imports()
     data = prepare_data()
     key = jax.random.key(config.seed)
@@ -175,7 +176,7 @@ def train_lexical(config: GaussianLexicalConfig = GaussianLexicalConfig()) -> tu
         "selection.lexical_step": best[2] if best else 0,
         "validation.lexical_macro_auc": best[0] if best else float("nan"),
         "validation.lexical_loss": best[1] if best else float("nan"),
-        "training.stage": "gaussian-lexical-only precheck",
+        "training.stage": f"gaussian-lexical-only precheck; D=1 M={config.components}",
     }
 
 

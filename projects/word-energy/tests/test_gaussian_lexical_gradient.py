@@ -39,3 +39,16 @@ def test_gaussian_constraints_bound_means_and_variance() -> None:
     assert np.all(np.linalg.norm(np.asarray(constrained["means"]), axis=-1) <= 3.0 + 1e-12)
     assert np.all(np.asarray(constrained["variances"]) >= 0.16)
     assert np.all(np.asarray(constrained["variances"]) <= 1.44)
+
+
+def test_gaussian_constraints_support_preregistered_capacity_shapes() -> None:
+    _, jnp, _ = _imports()
+    for components in (1, 4):
+        config = GaussianLexicalConfig(components=components)
+        raw = {
+            "means": jnp.zeros((2, components, 1), dtype=jnp.float64),
+            "raw_variances": jnp.zeros((2, components, 1), dtype=jnp.float64),
+            "logits": jnp.zeros((2, components), dtype=jnp.float64),
+        }
+        constrained = _constrained(raw, config, jnp)
+        assert constrained["means"].shape == raw["means"].shape

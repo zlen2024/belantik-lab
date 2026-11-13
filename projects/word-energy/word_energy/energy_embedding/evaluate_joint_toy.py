@@ -14,6 +14,7 @@ from word_energy.ising.exact_training import prepare_data
 
 def _landscape_from_raw(raw: dict[str, np.ndarray], config: GaussianJointConfig) -> GaussianMixtureLandscape:
     _, jnp, _ = _imports()
+    components = int(np.asarray(raw["logits"]).shape[1])
     lexical_config = GaussianLexicalConfig(
         seed=config.seed,
         updates=config.lexical_updates,
@@ -21,6 +22,7 @@ def _landscape_from_raw(raw: dict[str, np.ndarray], config: GaussianJointConfig)
         learning_rate=config.lexical_lr,
         clip_norm=config.clip_norm,
         validation_every=config.validation_every,
+        components=components,
     )
     parameters = _constrained({name: jnp.asarray(value) for name, value in raw.items()}, lexical_config, jnp)
     return GaussianMixtureLandscape(

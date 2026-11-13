@@ -174,7 +174,13 @@ def gaussian_hermite_center_marginal_1d(
 
 
 def _sense_boundaries_1d(q_finance, q_river, lower: float, upper: float, grid_size: int) -> tuple[float, ...]:
-    """Locate crossings of two train-only density estimates in a finite domain."""
+    """Locate genuine crossings of two train-only density estimates.
+
+    Region membership is defined by the strict relation ``q_finance >
+    q_river``.  In particular, do not turn a very small absolute density
+    difference in a Gaussian tail into a fake boundary: that made the old
+    domain-refinement audit depend on its interval midpoint.
+    """
     if grid_size < 3:
         raise ValueError("grid_size must be at least three")
     grid = np.linspace(lower, upper, grid_size)
@@ -184,14 +190,16 @@ def _sense_boundaries_1d(q_finance, q_river, lower: float, upper: float, grid_si
         return float(np.asarray(q_finance(point)).reshape(-1)[0] - np.asarray(q_river(point)).reshape(-1)[0])
 
     values = np.asarray([difference(value) for value in grid])
-    scale = max(1.0, float(np.max(np.abs(values))))
-    tolerance = 1e-12 * scale
+    signs = np.sign(values).astype(np.int8)
     roots: list[float] = []
-    for left, right, left_value, right_value in zip(grid[:-1], grid[1:], values[:-1], values[1:]):
-        if left_value * right_value < 0.0:
-            roots.append(float(brentq(difference, float(left), float(right), xtol=1e-13, rtol=1e-13)))
-        elif abs(left_value) <= tolerance and abs(right_value) > tolerance:
-            roots.append(float(left))
+    previous: int | None = None
+    for index, sign in enumerate(signs):
+        if sign == 0:
+            continue
+        if previous is not None and sign != signs[previous]:
+            left, right = float(grid[previous]), float(grid[index])
+            roots.append(float(brentq(difference, left, right, xtol=1e-13, rtol=1e-13)))
+        previous = index
     deduplicated: list[float] = []
     for root in sorted(roots):
         if not deduplicated or abs(root - deduplicated[-1]) > 1e-9:
@@ -269,18 +277,25 @@ def adaptive_center_region_mass_1d(
         raise ValueError("Every supplied boundary must lie inside the integration domain")
     intervals = (lower, *boundaries, upper)
 
-    def region_credit(value: float) -> float:
-        point = np.asarray([value], dtype=np.float64)
-        difference = float(np.asarray(q_finance(point)).reshape(-1)[0] - np.asarray(q_river(point)).reshape(-1)[0])
-        tolerance = 1e-12 * max(1.0, abs(difference))
-        return 1.0 if difference > tolerance else 0.0 if difference < -tolerance else 0.5
+    def region_credit(left: float, right: float) -> float:
+        """Find a non-underflowing interior sign for one root-bounded interval."""
+        for fraction in (0.5, 0.25, 0.75, 0.125, 0.875):
+            value = left + fraction * (right - left)
+            point = np.asarray([value], dtype=np.float64)
+            finance = float(np.asarray(q_finance(point)).reshape(-1)[0])
+            river = float(np.asarray(q_river(point)).reshape(-1)[0])
+            if finance > river:
+                return 1.0
+            if finance < river:
+                return 0.0
+        return 0.5
 
     finance_mass = 0.0
     total_mass = 0.0
     error = 0.0
     for left, right in zip(intervals[:-1], intervals[1:]):
         mass, mass_error = quad(unnormalised_center_density, left, right, epsabs=epsabs, epsrel=epsrel, limit=200)
-        credit = region_credit((left + right) / 2.0)
+        credit = region_credit(left, right)
         finance_mass += credit * mass
         total_mass += mass
         error += abs(mass_error)
