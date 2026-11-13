@@ -27,7 +27,7 @@ if __name__ == "__main__":
     )
     raw, metrics = train_joint_precheck(config)
     artifact = {
-        "kind": "Gaussian D=1/M=2 joint quadrature precheck; no sampler, sense-region audit, test or hardware claim",
+        "kind": "Gaussian D=1/M=2 joint quadrature precheck; validation sense-first selection with adaptive region audit; no sampler, test or hardware claim",
         "config": config.__dict__,
         "metrics": metrics,
     }

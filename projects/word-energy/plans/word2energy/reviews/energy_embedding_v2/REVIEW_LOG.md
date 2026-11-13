@@ -61,3 +61,15 @@ Verdict critic: tiada isu P1 atau P2 yang menghalang pelaksanaan pilot ditemui d
 Dua detail kecil untuk direkod dalam config sebelum implementation run: formula frequency-only baseline dan butiran numerik root-finding/adaptive integration. Critic menyatakan kedua-duanya tidak memerlukan perubahan reka bentuk untuk kelulusan pelan.
 
 Kelulusan ialah penilaian seorang critic terhadap mutu pelan. Tiada latihan v2 atau keputusan semantik dihasilkan dalam loop ini. Cross-check joint integral bebas, sampler, pembelajaran sense dan manfaat berbanding baseline masih perlu diuji. Versi snapshot mengekalkan bytes asal untuk audit; pautan relatif dalam snapshot mengikuti lokasi asal pelan utama.
+
+## Checkpoint implementation — 13 November 2026
+
+Critic: GPT-6.1 Sol, reasoning ultra. Skop: discrepancy antara protokol checkpoint Gaussian joint dan implementation, bukan semakan semula skor pelan.
+
+**Fakta diukur:** Pelan menetapkan pemilihan validation: macro sense accuracy tertinggi, kemudian total joint loss terendah, kemudian checkpoint paling awal. Implementation lama memilih total joint loss sahaja. Audit seed 17 bagi checkpoint langkah 100 memberi accuracy `1.0`, gain `0.0870306`, context-node delta `6.43e-8`, domain delta `1.05e-7`, dan adaptive integration error `2.54e-10`; semuanya melepasi gate region `1e-4`. Rekod MLflow audit: `fb7fc512dd1d466b8c3e2bda882294cf`.
+
+**Inferens critic:** Ini ialah jurang prospective protocol, tetapi bukan bukti checkpoint seed 17 yang salah: accuracy langkah 100 sudah maksimum dan lossnya paling rendah. Namun audit terdahulu tidak merekod score semua checkpoint, maka inferens itu belum provenance yang mencukupi untuk pilot tiga-seed.
+
+**Tindakan terikat:** repair measurement. Trainer ditukar untuk menilai setiap checkpoint validation dengan adaptive train-anchor region evaluator, memerlukan gate numerik, dan memilih accuracy → loss → step. Seed 17 diulang tanpa membuka test: kelima-lima checkpoint (20 hingga 100) lulus gate dan memperoleh accuracy `1.0`; loss memilih langkah 100. Artifact latihan baharu direkodkan dalam MLflow run `99df11c7083944fabb947ee637628e00`.
+
+**Kesimpulan hipotesis:** Tiada prediction saintifik gagal. Satu seed validation menyokong peralihan region mengikut konteks pada toy ini sahaja. Ia belum menunjukkan manfaat training berbanding geometri rawak atau contextual vector baseline, belum tiga seed, belum sampler, dan bukan bukti hardware.

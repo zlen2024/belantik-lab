@@ -38,9 +38,9 @@ if __name__ == "__main__":
             sampler_schedule="exact-for-fixed-order Gauss--Hermite quadrature; no sampler gradient",
             seed=result["config"]["seed"],
             data_hash=sha256_file(PROJECT_ROOT / "experiments" / "runs" / "synthetic-split-manifest.json"),
-            data_split="synthetic train with validation joint-loss checkpoint selection; test unopened",
+            data_split="synthetic train with validation sense-first/loss-second checkpoint selection; test unopened",
             graph_summary="L=3 complete graph, bounded RBF kernel, D=1 fixed metric",
-            limitations="Numerical precheck only: no sense-region refinement, sampler audit, test evaluation, multi-seed result or hardware execution.",
+            limitations="Validation selector includes adaptive sense-region audit, but this remains a numerical precheck: no sampler audit, test evaluation, multi-seed result or hardware execution.",
         )
         config = {**result["config"], "protocol_sha256": result["metrics"]["protocol.sha256"], "schedule_sha256": result["metrics"]["schedule.sha256"]}
         log_contract(mlflow, contract, config)

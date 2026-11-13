@@ -4,6 +4,7 @@ from word_energy.energy_embedding.train_joint_toy import (
     GaussianJointConfig,
     make_joint_free_energy,
     quadrature_refinement_audit,
+    select_joint_validation_checkpoint,
 )
 
 
@@ -29,3 +30,15 @@ def test_gaussian_joint_free_energy_lambda_zero_and_gradient() -> None:
     # fixture whose mixture shape may need a higher order.
     assert audit["numerics.refinement_f_abs_delta"] < 2e-4
     assert audit["numerics.refinement_mean_gradient_relative_delta"] < 2e-2
+
+
+def test_joint_checkpoint_selection_prefers_sense_then_loss_then_earlier_step() -> None:
+    selected = select_joint_validation_checkpoint(
+        [
+            {"step": 20.0, "validation.macro_sense_accuracy": 0.5, "validation.joint_total_loss": 0.1},
+            {"step": 40.0, "validation.macro_sense_accuracy": 1.0, "validation.joint_total_loss": 0.7},
+            {"step": 60.0, "validation.macro_sense_accuracy": 1.0, "validation.joint_total_loss": 0.6},
+            {"step": 80.0, "validation.macro_sense_accuracy": 1.0, "validation.joint_total_loss": 0.6},
+        ]
+    )
+    assert selected["step"] == 60.0

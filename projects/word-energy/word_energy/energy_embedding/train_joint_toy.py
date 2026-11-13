@@ -42,6 +42,20 @@ class GaussianJointConfig:
     length_scale: float = 1.0
 
 
+def select_joint_validation_checkpoint(candidates: list[dict[str, float]]) -> dict[str, float]:
+    """Apply the frozen joint selector: sense accuracy, loss, then early step."""
+    if not candidates:
+        raise ValueError("At least one numerically eligible validation checkpoint is required")
+    return min(
+        candidates,
+        key=lambda candidate: (
+            -candidate["validation.macro_sense_accuracy"],
+            candidate["validation.joint_total_loss"],
+            candidate["step"],
+        ),
+    )
+
+
 def _quadrature_constants(order: int, components: int, window: int = 3):
     if order < 2:
         raise ValueError("quadrature order must be at least two")
@@ -122,12 +136,12 @@ def quadrature_refinement_audit(raw: dict[str, np.ndarray], tokens: np.ndarray, 
 
 
 def train_joint_precheck(config: GaussianJointConfig = GaussianJointConfig()):
-    """Train lexical then joint rankings; select by validation joint loss only.
-
-    Sense-region integration is deliberately not used as a selection metric yet:
-    its discontinuous indicator needs its own refinement audit.
-    """
+    """Train lexical then joint rankings with frozen validation-only selection."""
     jax, jnp, optax = _imports()
+    # Import here to avoid the evaluator's configuration import forming a module
+    # cycle while retaining its train-anchor-only region construction.
+    from word_energy.energy_embedding.evaluate_joint_toy import evaluate_joint_context
+
     _, _, lexical_config, free_energy = make_joint_free_energy(config)
     data = prepare_data()
     lexical_raw, lexical_metrics = train_lexical(lexical_config)
@@ -155,9 +169,9 @@ def train_joint_precheck(config: GaussianJointConfig = GaussianJointConfig()):
         return optax.apply_updates(parameters, updates), next_state, loss
 
     compiled_step = jax.jit(step)
-    best_loss: float | None = None
-    best_step = 0
-    best_raw = _copy(raw)
+    eligible_candidates: list[dict[str, float]] = []
+    candidate_records: list[dict[str, float | bool]] = []
+    candidate_raw: dict[int, dict[str, np.ndarray]] = {}
     for update in range(config.joint_updates):
         window_ids = data["joint_schedule"][update % len(data["joint_schedule"])]
         window_ids = window_ids[: config.joint_batch] if config.joint_batch <= 4 else np.resize(window_ids, config.joint_batch)
@@ -167,9 +181,35 @@ def train_joint_precheck(config: GaussianJointConfig = GaussianJointConfig()):
         step_number = update + 1
         if step_number % config.validation_every == 0 or step_number == config.joint_updates:
             value = float(joint_loss(raw, validation_windows, validation_corruptions, validation_pairs, validation_negatives))
-            if best_loss is None or value < best_loss:
-                best_loss, best_step, best_raw = value, step_number, _copy(raw)
-    final_raw = best_raw
+            raw_numpy = _copy(raw)
+            context_metrics = evaluate_joint_context(
+                raw_numpy,
+                config,
+                split="validation",
+                order=config.quadrature_order,
+                refinement_order=max(12, config.quadrature_order + 4),
+            )
+            smooth_audit = quadrature_refinement_audit(raw_numpy, data["train_windows"][0], config)
+            eligible = bool(
+                context_metrics["validation.region_max_mass_delta"] <= 1e-4
+                and context_metrics["validation.region_max_adaptive_integration_error"] <= 1e-4
+                and smooth_audit["numerics.refinement_f_abs_delta"] <= 1e-4
+                and smooth_audit["numerics.refinement_mean_gradient_relative_delta"] <= 1e-3
+            )
+            candidate = {
+                "step": float(step_number),
+                "validation.joint_total_loss": value,
+                **context_metrics,
+                **smooth_audit,
+            }
+            candidate_records.append({**candidate, "numerically_eligible": eligible})
+            if eligible:
+                eligible_candidates.append(candidate)
+                candidate_raw[step_number] = raw_numpy
+    selected = select_joint_validation_checkpoint(eligible_candidates)
+    best_step = int(selected["step"])
+    best_loss = selected["validation.joint_total_loss"]
+    final_raw = candidate_raw[best_step]
     lambda_zero = float(free_energy({name: jnp.asarray(value) for name, value in final_raw.items()}, jnp.asarray(data["train_windows"][0]), 0.0))
     metrics = {
         "protocol.sha256": data["protocol_sha256"],
@@ -177,11 +217,14 @@ def train_joint_precheck(config: GaussianJointConfig = GaussianJointConfig()):
         "selection.lexical_step": lexical_metrics["selection.lexical_step"],
         "selection.lexical_validation_auc": lexical_metrics["validation.lexical_macro_auc"],
         "selection.joint_step": best_step,
-        "validation.joint_total_loss": best_loss if best_loss is not None else float("nan"),
+        "validation.joint_total_loss": best_loss,
+        "selection.joint_validation_macro_sense_accuracy": selected["validation.macro_sense_accuracy"],
+        "selection.joint_numerically_eligible_candidates": len(eligible_candidates),
+        "selection.joint_candidate_records": candidate_records,
         "numerics.free_energy_lambda0_abs": abs(lambda_zero),
         "quadrature.order": config.quadrature_order,
         "quadrature.terms_per_window": 8 * config.quadrature_order**3,
-        "training.stage": "gaussian-joint quadrature precheck; no sense-region refinement or sampler audit",
+        "training.stage": "gaussian-joint quadrature precheck; validation sense-first checkpoint selection with adaptive region audit; no sampler audit",
     }
     metrics.update(quadrature_refinement_audit(final_raw, data["train_windows"][0], config))
     return final_raw, metrics
