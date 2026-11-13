@@ -97,3 +97,11 @@ Critic: GPT-6.1 Sol, reasoning ultra. Semakan mendapati tolerance mutlak dalam p
 Repair menggunakan perbandingan strict `qF > qR`, genuine sign crossings sahaja, serta interior probe jika midpoint underflow. Regression test ditambah. Semua checkpoint M2 lexical dan joint yang telah disimpan diaudit semula pada validation tanpa retrain: accuracy kini `1.0, 1.0, 1.0`, dengan max region delta di bawah `4.4e-7`. M4 juga `1.0, 1.0, 1.0`; M1 `0.5, 0.5, 1.0` selepas audit stabil.
 
 Semua verdict terdahulu yang menyatakan seed 43/M4 gagal, atau menyimpulkan bahawa geometry lexical seed 43 bias kepada river, adalah **superseded measurement errors** dan tidak boleh dirujuk sebagai bukti saintifik. Critic membenarkan holdout contextual M2 dibuka hanya selepas manifest checkpoint/map/evaluator dibekukan. Manifest: [M2_CONTEXTUAL_HOLDOUT_MANIFEST.md](../../M2_CONTEXTUAL_HOLDOUT_MANIFEST.md).
+
+## Holdout M2 dan contextual vector control — 13 November 2026
+
+Holdout M2 dibuka hanya selepas manifest `0598f64` dibekukan. Semua tiga seed joint dan frozen lexical mencapai macro sense accuracy `1.0` pada 12 context test (F=6/6, R=6/6, tiada tie), lexical retrieval AUC `1.0`, dan region mass delta maksimum di bawah `1.6e-7`. Ini melengkapkan toy contextual accuracy/retrieval checks untuk checkpoint yang dipilih.
+
+Joint gain posterior test berbanding frozen lexical ialah `0.00364`, `0.00419`, `0.00350` bagi seed 17,29,43; accuracy tidak berubah. Baseline contextual SGNS beku kemudian diuji melalui manifest `f72ea73`: tied D6 dan untied D3 (kedua-duanya 156 parameter embedding) juga mencapai `1.0`, F=6/6 dan R=6/6 pada semua seed. Jadi data ini menyokong contextual readout pada toy, tetapi **tidak menyokong claim bahawa joint energy training lebih baik daripada vector contextual biasa**.
+
+Had kekal: 12 context setiap seed bukan 36 dokumen bebas; vocabulary diketahui dan corpus synthetic kecil. Hasil tidak membuktikan natural-text semantics, sampler/MCMC fidelity, THRML/Torx parity, thermodynamic hardware execution atau advantage representation. Langkah research seterusnya untuk matlamat thermodynamic ialah sampler audit M2 melawan reference exact, atau benchmark yang lebih sukar dan pradaftar; jangan scale atau claim superiority hanya kerana toy perfect.
