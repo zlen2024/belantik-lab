@@ -34,12 +34,12 @@ if __name__ == "__main__":
             energy_convention="joint posterior region mass under train-anchor density map",
             variable_encoding="continuous D=1 Gaussian-mixture latent state",
             beta_temperature_convention="unit-temperature normalised free-energy ranking",
-            sampler_schedule="Gauss--Hermite quadrature; no MCMC",
+            sampler_schedule="adaptive 1-D central integration split at train-anchor region boundaries; Gauss--Hermite context quadrature; no MCMC",
             seed=arguments.seed,
             data_hash=sha256_file(PROJECT_ROOT / "experiments" / "runs" / "synthetic-split-manifest.json"),
             data_split=f"synthetic {split}; train-anchor map only",
             graph_summary="L=3 complete graph, bounded RBF kernel, D=1 fixed metric",
-            limitations="Region indicator quadrature refinement is measured; do not infer semantic success when its gate fails. No sampler or hardware claim.",
+            limitations="Central-region discontinuity, context-node order and finite-domain sensitivity are measured on validation only. One seed is not a multi-seed result. No sampler or hardware claim.",
         )
         log_contract(mlflow, contract, result)
         mlflow.log_metrics({key: value for key, value in result["metrics"].items() if isinstance(value, (int, float)) and math.isfinite(value)})

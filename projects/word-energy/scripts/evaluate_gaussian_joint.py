@@ -35,7 +35,7 @@ if __name__ == "__main__":
         refinement_order=arguments.refinement_order,
     )
     artifact = {
-        "kind": "Gaussian joint train-anchor region evaluation; quadrature-indicator audit required before semantic claim",
+        "kind": "Gaussian joint train-anchor region evaluation; adaptive central integration and contextual quadrature audit required before semantic claim",
         "checkpoint": checkpoint.name,
         "split": split,
         "order": arguments.order,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from word_energy.energy_embedding.landscape import GaussianMixtureLandscape
-from word_energy.energy_embedding.reference import gaussian_hermite_center_marginal_1d
+from word_energy.energy_embedding.reference import _sense_boundaries_1d, adaptive_center_region_mass_1d
 from word_energy.energy_embedding.system import ActiveWindowSystem
 from word_energy.energy_embedding.train_joint_toy import GaussianJointConfig
 from word_energy.energy_embedding.train_lexical import GaussianLexicalConfig, _constrained, _imports
@@ -30,13 +30,6 @@ def _landscape_from_raw(raw: dict[str, np.ndarray], config: GaussianJointConfig)
     )
 
 
-def _region_mass(marginal, q_finance, q_river) -> float:
-    difference = q_finance(marginal.states) - q_river(marginal.states)
-    f_mass = float(np.sum(marginal.weights[difference > 0]))
-    equality = np.isclose(difference, 0.0, rtol=0.0, atol=1e-14)
-    return f_mass + 0.5 * float(np.sum(marginal.weights[equality]))
-
-
 def _sense_map(landscape: GaussianMixtureLandscape, data):
     anchors: dict[str, list[int]] = {"F": [], "R": []}
     for window, family in zip(data["train_windows"], data["train_families"]):
@@ -57,13 +50,17 @@ def evaluate_joint_context(
     split: str = "validation",
     order: int = 12,
     refinement_order: int = 16,
+    lower: float = -12.0,
+    upper: float = 12.0,
+    refinement_lower: float = -15.0,
+    refinement_upper: float = 15.0,
 ) -> dict[str, float]:
-    """Evaluate context sense mass with a train-only density-derived region map.
+    """Evaluate context sense mass with train-only regions and adaptive integration.
 
     ``split='test'`` is explicit to protect the holdout.  The returned
-    refinement quantity measures only the discontinuous region integral's
-    sensitivity to quadrature order; callers must report it before interpreting
-    a sense score.
+    refinement quantities separately audit the context Gauss--Hermite nodes
+    and finite integration domain.  Callers must report them before
+    interpreting a sense score.
     """
     if split not in {"validation", "test"}:
         raise ValueError("split must be 'validation' or 'test'")
@@ -72,27 +69,68 @@ def evaluate_joint_context(
     data = prepare_data()
     landscape = _landscape_from_raw(raw, config)
     q_finance, q_river = _sense_map(landscape, data)
+    boundaries = _sense_boundaries_1d(q_finance, q_river, lower, upper, grid_size=1025)
+    refinement_boundaries = _sense_boundaries_1d(
+        q_finance, q_river, refinement_lower, refinement_upper, grid_size=1025
+    )
     system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=config.coupling, length_scale=config.length_scale)
     lambda_zero_system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=0.0, length_scale=config.length_scale)
     credits: dict[str, list[float]] = {"F": [], "R": []}
     posterior: list[float] = []
     prior: list[float] = []
-    refinement_deltas: list[float] = []
+    context_refinement_deltas: list[float] = []
+    domain_refinement_deltas: list[float] = []
+    integration_errors: list[float] = []
     for window, family in zip(data[f"{split}_windows"], data[f"{split}_families"]):
         if family not in credits:
             continue
-        marginal = gaussian_hermite_center_marginal_1d(system, window, order=order)
-        zero_marginal = gaussian_hermite_center_marginal_1d(lambda_zero_system, window, order=order)
-        refined = gaussian_hermite_center_marginal_1d(system, window, order=refinement_order)
-        f_mass = _region_mass(marginal, q_finance, q_river)
-        f_prior = _region_mass(zero_marginal, q_finance, q_river)
-        refined_f_mass = _region_mass(refined, q_finance, q_river)
+        marginal = adaptive_center_region_mass_1d(
+            system, window, q_finance, q_river, context_order=order, lower=lower, upper=upper, boundaries=boundaries
+        )
+        zero_marginal = adaptive_center_region_mass_1d(
+            lambda_zero_system,
+            window,
+            q_finance,
+            q_river,
+            context_order=order,
+            lower=lower,
+            upper=upper,
+            boundaries=boundaries,
+        )
+        refined_context = adaptive_center_region_mass_1d(
+            system,
+            window,
+            q_finance,
+            q_river,
+            context_order=refinement_order,
+            lower=lower,
+            upper=upper,
+            boundaries=boundaries,
+        )
+        refined_domain = adaptive_center_region_mass_1d(
+            system,
+            window,
+            q_finance,
+            q_river,
+            context_order=refinement_order,
+            lower=refinement_lower,
+            upper=refinement_upper,
+            boundaries=refinement_boundaries,
+        )
+        f_mass = marginal.finance_probability
+        f_prior = zero_marginal.finance_probability
         true_mass = f_mass if family == "F" else 1.0 - f_mass
         true_prior = f_prior if family == "F" else 1.0 - f_prior
         credits[family].append(1.0 if true_mass > 0.5 else 0.5 if true_mass == 0.5 else 0.0)
         posterior.append(true_mass)
         prior.append(true_prior)
-        refinement_deltas.append(abs(f_mass - refined_f_mass))
+        context_refinement_deltas.append(abs(f_mass - refined_context.finance_probability))
+        domain_refinement_deltas.append(abs(refined_context.finance_probability - refined_domain.finance_probability))
+        integration_errors.extend(
+            [marginal.integration_error, zero_marginal.integration_error, refined_context.integration_error, refined_domain.integration_error]
+        )
+    max_context_delta = float(np.max(context_refinement_deltas))
+    max_domain_delta = float(np.max(domain_refinement_deltas))
     return {
         f"{split}.macro_sense_accuracy": float(np.mean([np.mean(credits["F"]), np.mean(credits["R"])])),
         f"{split}.correct_region_posterior": float(np.mean(posterior)),
@@ -100,5 +138,8 @@ def evaluate_joint_context(
         f"{split}.correct_region_gain_lambda1_minus_lambda0": float(np.mean(posterior) - np.mean(prior)),
         f"{split}.region_quadrature_order": float(order),
         f"{split}.region_refinement_order": float(refinement_order),
-        f"{split}.region_max_mass_delta": float(np.max(refinement_deltas)),
+        f"{split}.region_max_context_order_delta": max_context_delta,
+        f"{split}.region_max_domain_delta": max_domain_delta,
+        f"{split}.region_max_adaptive_integration_error": float(np.max(integration_errors)),
+        f"{split}.region_max_mass_delta": max(max_context_delta, max_domain_delta),
     }

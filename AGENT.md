@@ -103,6 +103,17 @@ For an EBM, `E` is normally a learned compatibility score or dimensionless Boltz
 
 Use MLflow as the system of record for experiments. Resolve the tracking URI explicitly from the active project's tracking decision; Word Energy's local SQLite URI is described in `projects/word-energy/TRACKING_DECISION.md`, so directory-dependent defaults must not select a different tracker. Every thermodynamic-computing run records: `execution_tier`, `device_class` (`cpu_gpu_simulator`, `remote_simulator`, or `physical_probabilistic_chip`), backend and package version, Git commit or dirty-tree snapshot, model family, energy/encoding convention, sampler/update schedule and applicable chain count, burn-in and sample count, graph size/degree, seed, data version/hash and split, environment/config artifact, measured metrics, and known limitations. TensorBoard may visualize dense diagnostics, but should link back to the MLflow run rather than become a second, conflicting experiment record. Do not start paid cloud or physical hardware runs without explicit authorization.
 
+### Critic checkpoint for a failed or ambiguous research result
+
+The user authorises a focused critic agent when an experiment has a meaningful problem: a preregistered gate fails, seeds disagree, a control matches the claimed signal, a numerical audit is unstable, a result conflicts with a prior result, or the core hypothesis appears unsupported. Prefer `gpt-6.1-sol` at `ultra` reasoning when that model setting is available. The critic is not a rubber stamp and must inspect the actual plan, code diff, command/artifact, MLflow record and relevant tests before advising.
+
+The critic must answer two separate questions:
+
+1. **Experiment critique:** Is the result potentially caused by protocol, data leakage, split misuse, numerical/sign error, weak baseline/control, insufficient seeds, sampler/inference error, or an unsupported conclusion?
+2. **Hypothesis critique:** If the experiment is sound, does the result contradict the scientific hypothesis or merely leave it untested? State the prediction that failed, what evidence would change the conclusion, and the smallest competing hypothesis worth testing.
+
+Its report must cite concrete evidence, distinguish measured facts from inference, and end with one bounded next action: rerun unchanged, repair the measurement, add a specified control, revise the explanation, or branch/reject the hypothesis. It must not silently change the frozen test protocol, tune on the holdout, make hardware claims, or implement a new direction until the primary agent and user have accepted the recommendation. Log the critique as an MLflow artifact or linked research note when it affects an experiment decision.
+
 When a task requests a translation from classical code to THRML or Torx, before scaling: (1) reproduce a classical exact or known-answer fixture; (2) map the same observable to THRML or Torx and check agreement within Monte-Carlo uncertainty; (3) run the intended simulator experiment; (4) use physical hardware only when available and explicitly authorized. Keep simulation results, hardware results, and extrapolations separately labeled. Classical-only research need not add a simulator lane.
 
 ### ML research and paper reading

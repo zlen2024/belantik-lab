@@ -5,6 +5,8 @@ from __future__ import annotations
 from itertools import product
 from dataclasses import dataclass
 import numpy as np
+from scipy.integrate import quad
+from scipy.optimize import brentq
 
 from word_energy.numerics import logsumexp
 
@@ -28,6 +30,25 @@ class GaussianHermiteCenterMarginal:
 
     states: np.ndarray
     weights: np.ndarray
+
+
+@dataclass(frozen=True)
+class AdaptiveCenterRegionMass:
+    """One-dimensional central region mass with adaptive boundary integration.
+
+    The two context coordinates are still integrated with Gauss--Hermite
+    nodes.  The central coordinate is integrated separately on either side of
+    every train-derived sense-map boundary, so a discontinuous region
+    indicator is not evaluated only at a fixed set of central nodes.
+    """
+
+    finance_mass: float
+    total_mass: float
+    finance_probability: float
+    integration_error: float
+    boundaries: tuple[float, ...]
+    lower: float
+    upper: float
 
 
 def gaussian_hermite_joint_reference(
@@ -150,6 +171,130 @@ def gaussian_hermite_center_marginal_1d(
     )
     normalised = np.exp(log_terms - logsumexp(log_terms))
     return GaussianHermiteCenterMarginal(states=states[:, :, 0, 0].reshape(-1), weights=normalised.reshape(-1))
+
+
+def _sense_boundaries_1d(q_finance, q_river, lower: float, upper: float, grid_size: int) -> tuple[float, ...]:
+    """Locate crossings of two train-only density estimates in a finite domain."""
+    if grid_size < 3:
+        raise ValueError("grid_size must be at least three")
+    grid = np.linspace(lower, upper, grid_size)
+
+    def difference(value: float) -> float:
+        point = np.asarray([value], dtype=np.float64)
+        return float(np.asarray(q_finance(point)).reshape(-1)[0] - np.asarray(q_river(point)).reshape(-1)[0])
+
+    values = np.asarray([difference(value) for value in grid])
+    scale = max(1.0, float(np.max(np.abs(values))))
+    tolerance = 1e-12 * scale
+    roots: list[float] = []
+    for left, right, left_value, right_value in zip(grid[:-1], grid[1:], values[:-1], values[1:]):
+        if left_value * right_value < 0.0:
+            roots.append(float(brentq(difference, float(left), float(right), xtol=1e-13, rtol=1e-13)))
+        elif abs(left_value) <= tolerance and abs(right_value) > tolerance:
+            roots.append(float(left))
+    deduplicated: list[float] = []
+    for root in sorted(roots):
+        if not deduplicated or abs(root - deduplicated[-1]) > 1e-9:
+            deduplicated.append(root)
+    return tuple(deduplicated)
+
+
+def adaptive_center_region_mass_1d(
+    system: ActiveWindowSystem,
+    tokens: np.ndarray,
+    q_finance,
+    q_river,
+    *,
+    context_order: int = 12,
+    lower: float = -12.0,
+    upper: float = 12.0,
+    boundary_grid_size: int = 1025,
+    boundaries: tuple[float, ...] | None = None,
+    epsabs: float = 1e-9,
+    epsrel: float = 1e-9,
+) -> AdaptiveCenterRegionMass:
+    """Integrate the central finance-region probability for a three-token window.
+
+    This is a validation reference, not a sampler: it marginalises the two
+    context positions with fixed Gauss--Hermite nodes and applies adaptive
+    numerical integration to the central position.  The latter is split at
+    every ``q_finance(z) == q_river(z)`` boundary, which removes the previous
+    discontinuous-indicator quadrature artefact.
+    """
+    tokens = np.asarray(tokens, dtype=np.int64)
+    if tokens.shape != (3,):
+        raise ValueError("The adaptive central reference expects exactly three tokens")
+    if system.landscape.dimension != 1:
+        raise ValueError("The adaptive central reference is restricted to D=1")
+    if context_order < 2:
+        raise ValueError("context_order must be at least two")
+    if not lower < upper:
+        raise ValueError("Integration lower bound must be smaller than upper bound")
+
+    landscape = system.landscape
+    nodes, node_weights = np.polynomial.hermite.hermgauss(context_order)
+    component_pairs = np.asarray(list(product(range(landscape.components), repeat=2)), dtype=np.int64)
+    node_pairs = np.asarray(list(product(nodes, repeat=2)), dtype=np.float64)
+    node_pair_weights = np.prod(
+        np.asarray(list(product(node_weights / np.sqrt(np.pi), repeat=2)), dtype=np.float64), axis=1
+    )
+    context_weights: list[np.ndarray] = []
+    context_left: list[np.ndarray] = []
+    context_right: list[np.ndarray] = []
+    for left_component, right_component in component_pairs:
+        left_weight = landscape.weights(int(tokens[1]))[left_component]
+        right_weight = landscape.weights(int(tokens[2]))[right_component]
+        left = landscape.means[tokens[1], left_component, 0] + np.sqrt(2.0 * landscape.variances[tokens[1], left_component, 0]) * node_pairs[:, 0]
+        right = landscape.means[tokens[2], right_component, 0] + np.sqrt(2.0 * landscape.variances[tokens[2], right_component, 0]) * node_pairs[:, 1]
+        context_weights.append(float(left_weight * right_weight) * node_pair_weights)
+        context_left.append(left[:, None])
+        context_right.append(right[:, None])
+    term_weights = np.concatenate(context_weights)
+    left_states = np.concatenate(context_left)
+    right_states = np.concatenate(context_right)
+    left_right = system.kernel(left_states, right_states)
+
+    def unnormalised_center_density(value: float) -> float:
+        center = np.asarray([[value]], dtype=np.float64)
+        center_left = system.kernel(center, left_states)
+        center_right = system.kernel(center, right_states)
+        exponent = system.coupling * (center_left + center_right + left_right) / 2.0
+        total = float(np.sum(term_weights * np.exp(exponent)))
+        density = float(np.exp(landscape.log_density(int(tokens[0]), center)).item())
+        return density * total
+
+    if boundaries is None:
+        boundaries = _sense_boundaries_1d(q_finance, q_river, lower, upper, boundary_grid_size)
+    elif any(not lower < boundary < upper for boundary in boundaries):
+        raise ValueError("Every supplied boundary must lie inside the integration domain")
+    intervals = (lower, *boundaries, upper)
+
+    def region_credit(value: float) -> float:
+        point = np.asarray([value], dtype=np.float64)
+        difference = float(np.asarray(q_finance(point)).reshape(-1)[0] - np.asarray(q_river(point)).reshape(-1)[0])
+        tolerance = 1e-12 * max(1.0, abs(difference))
+        return 1.0 if difference > tolerance else 0.0 if difference < -tolerance else 0.5
+
+    finance_mass = 0.0
+    total_mass = 0.0
+    error = 0.0
+    for left, right in zip(intervals[:-1], intervals[1:]):
+        mass, mass_error = quad(unnormalised_center_density, left, right, epsabs=epsabs, epsrel=epsrel, limit=200)
+        credit = region_credit((left + right) / 2.0)
+        finance_mass += credit * mass
+        total_mass += mass
+        error += abs(mass_error)
+    if total_mass <= 0.0 or not np.isfinite(total_mass):
+        raise RuntimeError("Adaptive central integration produced an invalid total mass")
+    return AdaptiveCenterRegionMass(
+        finance_mass=float(finance_mass),
+        total_mass=float(total_mass),
+        finance_probability=float(finance_mass / total_mass),
+        integration_error=float(error / total_mass),
+        boundaries=boundaries,
+        lower=float(lower),
+        upper=float(upper),
+    )
 
 
 def grid_reference_1d(system: ActiveWindowSystem, tokens: np.ndarray, grid: np.ndarray) -> tuple[float, np.ndarray]:

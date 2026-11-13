@@ -21,4 +21,7 @@ def test_gaussian_joint_context_evaluation_uses_explicit_validation_split() -> N
     )
     assert 0.0 <= metrics["validation.macro_sense_accuracy"] <= 1.0
     assert 0.0 <= metrics["validation.correct_region_posterior"] <= 1.0
+    assert metrics["validation.region_max_context_order_delta"] <= 1.0
+    assert metrics["validation.region_max_domain_delta"] <= 1.0
+    assert metrics["validation.region_max_adaptive_integration_error"] <= 1.0
     assert metrics["validation.region_max_mass_delta"] <= 1.0
