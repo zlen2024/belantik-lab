@@ -14,6 +14,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from word_energy.energy_embedding.evaluate_joint_toy import evaluate_joint_context
 from word_energy.energy_embedding.train_joint_toy import GaussianJointConfig
+from word_energy.energy_embedding.train_lexical import evaluate_lexical
 
 
 if __name__ == "__main__":
@@ -40,6 +41,7 @@ if __name__ == "__main__":
         order=arguments.order,
         refinement_order=arguments.refinement_order,
     )
+    metrics.update(evaluate_lexical(raw, split))
     artifact = {
         "kind": (
             "Gaussian joint train-anchor region evaluation; adaptive central integration and contextual quadrature audit required before semantic claim"

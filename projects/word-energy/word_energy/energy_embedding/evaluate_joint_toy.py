@@ -79,6 +79,7 @@ def evaluate_joint_context(
     lambda_zero_system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=0.0, length_scale=config.length_scale)
     credits: dict[str, list[float]] = {"F": [], "R": []}
     prior_credits: dict[str, list[float]] = {"F": [], "R": []}
+    counts: dict[str, dict[str, int]] = {"F": {"F": 0, "R": 0, "tie": 0}, "R": {"F": 0, "R": 0, "tie": 0}}
     posterior: list[float] = []
     prior: list[float] = []
     context_refinement_deltas: list[float] = []
@@ -124,6 +125,8 @@ def evaluate_joint_context(
         f_prior = zero_marginal.finance_probability
         true_mass = f_mass if family == "F" else 1.0 - f_mass
         true_prior = f_prior if family == "F" else 1.0 - f_prior
+        prediction = "F" if f_mass > 0.5 else "R" if f_mass < 0.5 else "tie"
+        counts[family][prediction] += 1
         credits[family].append(1.0 if true_mass > 0.5 else 0.5 if true_mass == 0.5 else 0.0)
         prior_credits[family].append(1.0 if true_prior > 0.5 else 0.5 if true_prior == 0.5 else 0.0)
         posterior.append(true_mass)
@@ -141,6 +144,11 @@ def evaluate_joint_context(
         f"{split}.lambda0_macro_sense_accuracy": float(
             np.mean([np.mean(prior_credits["F"]), np.mean(prior_credits["R"])])
         ),
+        f"{split}.context_f_correct_count": float(counts["F"]["F"]),
+        f"{split}.context_r_correct_count": float(counts["R"]["R"]),
+        f"{split}.context_f_predicted_r": float(counts["F"]["R"]),
+        f"{split}.context_r_predicted_f": float(counts["R"]["F"]),
+        f"{split}.context_tie_count": float(counts["F"]["tie"] + counts["R"]["tie"]),
         f"{split}.correct_region_posterior": float(np.mean(posterior)),
         f"{split}.correct_region_prior": float(np.mean(prior)),
         f"{split}.correct_region_gain_lambda1_minus_lambda0": float(np.mean(posterior) - np.mean(prior)),
