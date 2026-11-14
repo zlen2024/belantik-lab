@@ -2,3 +2,6 @@
 # Keep MLflow in requirements-tracking.txt so tracking can remain lightweight.
 jax[cpu]==0.12.0.1
 optax==0.2.9
+
+# THRML lives as an editable workspace dependency:
+# .venv/Scripts/python.exe -m pip install -e ../../thrml
