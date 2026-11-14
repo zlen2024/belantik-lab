@@ -86,6 +86,11 @@ memperoleh 6/6 bagi setiap keluarga dan perbezaan anchor ~0.997. Diagnosis ini
 konsisten dengan collapse, tetapi tidak membuktikan puncanya. Butiran, prior,
 gain dan loss berada dalam [nota diagnosis](notes/ISING_VALIDATION_DIAGNOSIS.md).
 
+Diagnosis tambahan random dan permuted bagi tiga seed, beserta protokol
+attribution yang telah dikritik, direkod dalam
+[protokol attribution](notes/ISING_COLLAPSE_ATTRIBUTION_PROTOCOL.md). Enam run
+baharu membandingkan checkpoint sedia ada; bukan latihan baharu.
+
 ## 4. `word-energy-gaussian-lexical` — baseline lexical sahaja
 
 | ID run | Tujuan / hipotesis | Pemboleh ubah | Hasil | Kesimpulan |

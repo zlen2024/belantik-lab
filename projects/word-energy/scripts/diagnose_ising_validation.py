@@ -11,8 +11,10 @@ from word_energy.ising.exact_training import _free_energy_factory, _region_mass,
 from word_energy.tracking import sha256_file
 
 
-def diagnose(seed):
-    checkpoint = ROOT / 'experiments' / 'runs' / f'ising-exact-training-seed{seed}.npz'
+def diagnose(seed, checkpoint_kind='ising-exact-training'):
+    if checkpoint_kind not in ('ising-exact-training', 'ising-random', 'ising-permuted-lexical'):
+        raise ValueError('unknown checkpoint kind')
+    checkpoint = ROOT / 'experiments' / 'runs' / f'{checkpoint_kind}-seed{seed}.npz'
     with np.load(checkpoint) as archive:
         raw = {key: archive[key] for key in archive.files}
     _, jnp, energy, unary, center = _free_energy_factory()
@@ -37,9 +39,9 @@ def diagnose(seed):
         group = [r for r in rows if r['family'] == family]
         families[family] = {'count': len(group), **{key: float(np.mean([r[key] for r in group])) for key in ('correct_mass', 'prior_correct_mass', 'gain', 'credit')}}
     accuracy, loss = _sense_accuracy_and_loss(raw, energy, unary, center, data, jnp)
-    return {'seed': seed, 'checkpoint_sha256': sha256_file(checkpoint), 'protocol_sha256': data['protocol_sha256'], 'state_order': ['--', '+-', '-+', '++'], 'train_anchor_q': {key: value.tolist() for key, value in q.items()}, 'anchor_total_variation': float(np.abs(q['F'] - q['R']).sum() / 2), 'finance_region': region.tolist(), 'equal_region': equal.tolist(), 'bank_prior': np.asarray(unary(raw, data['ids']['bank'])).tolist(), 'family_summary': families, 'validation_macro_sense_accuracy': accuracy, 'validation_joint_ranking_loss': loss, 'validation_rows': rows}
+    return {'seed': seed, 'checkpoint_kind': checkpoint_kind, 'checkpoint_sha256': sha256_file(checkpoint), 'protocol_sha256': data['protocol_sha256'], 'state_order': ['--', '+-', '-+', '++'], 'train_anchor_q': {key: value.tolist() for key, value in q.items()}, 'anchor_total_variation': float(np.abs(q['F'] - q['R']).sum() / 2), 'finance_region': region.tolist(), 'equal_region': equal.tolist(), 'bank_prior': np.asarray(unary(raw, data['ids']['bank'])).tolist(), 'family_summary': families, 'validation_macro_sense_accuracy': accuracy, 'validation_joint_ranking_loss': loss, 'validation_rows': rows}
 
 
 if __name__ == '__main__':
     seed = int(sys.argv[1])
-    print(json.dumps(diagnose(seed), indent=2))
+    print(json.dumps(diagnose(seed, sys.argv[2] if len(sys.argv) > 2 else 'ising-exact-training'), indent=2))
