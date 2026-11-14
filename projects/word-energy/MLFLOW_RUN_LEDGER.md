@@ -77,6 +77,15 @@ hipotesis pilot ini belum disokong pada protokol sekarang. Critique dan tindakan
 read-only yang dicadangkan direkod dalam
 [`notes/ISING_PILOT_CRITIQUE.md`](notes/ISING_PILOT_CRITIQUE.md).
 
+Diagnosis susulan validation-only: `4ab120cbd8af48b787d482a2d129e80f`
+(seed17), `aa7fdddb3d2146ec84c667f2b5e685f3` (seed29), dan
+`b1683c935a044a8e97576908599e79ad` (seed43). Tujuan: membezakan collapse
+anchor daripada respons context lemah; yang berubah hanya checkpoint seed.
+Seed29 memperoleh F 6/6, R 0/6 dan perbezaan anchor F/R 0.000807; seed17/43
+memperoleh 6/6 bagi setiap keluarga dan perbezaan anchor ~0.997. Diagnosis ini
+konsisten dengan collapse, tetapi tidak membuktikan puncanya. Butiran, prior,
+gain dan loss berada dalam [nota diagnosis](notes/ISING_VALIDATION_DIAGNOSIS.md).
+
 ## 4. `word-energy-gaussian-lexical` — baseline lexical sahaja
 
 | ID run | Tujuan / hipotesis | Pemboleh ubah | Hasil | Kesimpulan |
