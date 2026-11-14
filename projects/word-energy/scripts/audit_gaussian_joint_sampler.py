@@ -26,6 +26,11 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--burn-in", type=int, default=500)
     parser.add_argument("--samples", type=int, default=2_000)
+    parser.add_argument(
+        "--all-validation",
+        action="store_true",
+        help="audit every validation window; default remains one F and one R fixture",
+    )
     arguments = parser.parse_args()
     config = GaussianJointConfig(seed=arguments.seed)
     raw = dict(np.load(PROJECT_ROOT / "experiments" / "runs" / f"gaussian-joint-seed{arguments.seed}.npz"))
@@ -33,10 +38,16 @@ if __name__ == "__main__":
     landscape = _landscape_from_raw(raw, config)
     q_finance, q_river = _sense_map(landscape, data)
     system = ActiveWindowSystem(landscape, raw_metric=np.array([[1.0]]), coupling=config.coupling, length_scale=config.length_scale)
-    windows = [(0, "F"), (6, "R")]
+    if arguments.all_validation:
+        windows = list(enumerate(data["validation_families"]))
+        scope = "all-validation"
+    else:
+        windows = [(0, "F"), (6, "R")]
+        scope = "two-fixture"
     audit: dict[str, object] = {
         "kind": "classical four-chain independence-MH audit against Gaussian quadrature reference; no hardware claim",
         "seed": arguments.seed,
+        "audit_scope": scope,
         "burn_in_sweeps": arguments.burn_in,
         "retained_sweeps": arguments.samples,
         "windows": [],
@@ -80,6 +91,6 @@ if __name__ == "__main__":
         audit["windows"].append(
             {"validation_row": index, "family": family, "tokens": tokens.tolist(), "acceptance_rate": result.acceptance_rate, "observables": observables}
         )
-    target = PROJECT_ROOT / "experiments" / "runs" / f"gaussian-joint-sampler-audit-seed{arguments.seed}.json"
+    target = PROJECT_ROOT / "experiments" / "runs" / f"gaussian-joint-sampler-audit-{scope}-seed{arguments.seed}.json"
     target.write_text(json.dumps(audit, indent=2), encoding="utf-8")
     print(json.dumps(audit, indent=2))
