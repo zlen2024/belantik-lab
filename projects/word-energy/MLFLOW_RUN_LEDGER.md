@@ -116,6 +116,12 @@ dan `ca6d88b60cd14aeb9b76d5d5eb285c9d` (43/29). Fixed lexical400 sense
 1.0 dan 0.5; kedua-duanya AUC 1.0. Butiran dan controls dalam
 [nota bias transplant](notes/ISING_ANCHOR_BIAS_TRANSPLANT_PROTOCOL.md).
 
+Run sintesis per-anchor `246f97dfb76d4c91b30bce7940f87f31` menganalisis
+21 snapshot untuk setiap satu daripada lapan kes asal/transplant tanpa latihan
+baharu. Tujuan: mengenal pasti sama ada collapse tertumpu pada beberapa token
+atau seluruh family; hasil dan batas terdapat dalam
+[nota sejarah anchor](notes/ISING_ANCHOR_HISTORY_SYNTHESIS.md).
+
 ## 4. `word-energy-gaussian-lexical` — baseline lexical sahaja
 
 | ID run | Tujuan / hipotesis | Pemboleh ubah | Hasil | Kesimpulan |
