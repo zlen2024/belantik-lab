@@ -17,6 +17,10 @@ def diagnose(seed, checkpoint_kind='ising-exact-training'):
     checkpoint = ROOT / 'experiments' / 'runs' / f'{checkpoint_kind}-seed{seed}.npz'
     with np.load(checkpoint) as archive:
         raw = {key: archive[key] for key in archive.files}
+    return diagnose_raw(raw, seed, checkpoint_kind, sha256_file(checkpoint))
+
+
+def diagnose_raw(raw, seed, checkpoint_kind, checkpoint_hash):
     _, jnp, energy, unary, center = _free_energy_factory()
     data = prepare_data()
     anchors = {family: [int(token) for row, label in zip(data['train_windows'], data['train_families']) if label == family for token in row[1:]] for family in ('F', 'R')}
@@ -39,7 +43,9 @@ def diagnose(seed, checkpoint_kind='ising-exact-training'):
         group = [r for r in rows if r['family'] == family]
         families[family] = {'count': len(group), **{key: float(np.mean([r[key] for r in group])) for key in ('correct_mass', 'prior_correct_mass', 'gain', 'credit')}}
     accuracy, loss = _sense_accuracy_and_loss(raw, energy, unary, center, data, jnp)
-    return {'seed': seed, 'checkpoint_kind': checkpoint_kind, 'checkpoint_sha256': sha256_file(checkpoint), 'protocol_sha256': data['protocol_sha256'], 'state_order': ['--', '+-', '-+', '++'], 'train_anchor_q': {key: value.tolist() for key, value in q.items()}, 'anchor_total_variation': float(np.abs(q['F'] - q['R']).sum() / 2), 'finance_region': region.tolist(), 'equal_region': equal.tolist(), 'bank_prior': np.asarray(unary(raw, data['ids']['bank'])).tolist(), 'family_summary': families, 'validation_macro_sense_accuracy': accuracy, 'validation_joint_ranking_loss': loss, 'validation_rows': rows}
+    f_post = np.mean([r['state_posterior'] for r in rows if r['family'] == 'F'], axis=0)
+    r_post = np.mean([r['state_posterior'] for r in rows if r['family'] == 'R'], axis=0)
+    return {'seed': seed, 'checkpoint_kind': checkpoint_kind, 'checkpoint_sha256': checkpoint_hash, 'protocol_sha256': data['protocol_sha256'], 'state_order': ['--', '+-', '-+', '++'], 'train_anchor_q': {key: value.tolist() for key, value in q.items()}, 'anchor_total_variation': float(np.abs(q['F'] - q['R']).sum() / 2), 'context_posterior_total_variation': float(np.abs(f_post-r_post).sum()/2), 'finance_region': region.tolist(), 'equal_region': equal.tolist(), 'bank_prior': np.asarray(unary(raw, data['ids']['bank'])).tolist(), 'family_summary': families, 'validation_macro_sense_accuracy': accuracy, 'validation_joint_ranking_loss': loss, 'validation_rows': rows}
 
 
 if __name__ == '__main__':

@@ -369,7 +369,7 @@ def _copy_raw(raw) -> dict[str, np.ndarray]:
     return {name: np.asarray(value).copy() for name, value in raw.items()}
 
 
-def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
+def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig(), *, snapshot_callback=None, branch: str = 'original', initial_override=None) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
     """Run the frozen protocol (or a shorter smoke subset) and select checkpoints."""
     jax, jnp, optax = _imports()
     _, _, free_energy, unary_probability, center_probability = _free_energy_factory()
@@ -382,6 +382,13 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[di
         "internal": jax.random.normal(kj, (vocab_size,), dtype=jnp.float64) * 0.1,
         "interaction": jnp.full((2,), jnp.log(0.8 / (1.5 - 0.8)), dtype=jnp.float64),
     }
+    if initial_override is not None:
+        raw = {name: jnp.asarray(value) for name, value in initial_override.items()}
+    if branch not in {'original', 'joint_from_initial', 'lexical_auxiliary'}:
+        raise ValueError('unknown diagnostic branch')
+    if snapshot_callback is not None:
+        snapshot_callback('initial', 0, _copy_raw(raw))
+    initial_raw = _copy_raw(raw)
     lexical_optimizer = optax.chain(optax.clip_by_global_norm(config.clip_norm), optax.adam(config.lexical_lr))
     lexical_state = lexical_optimizer.init(raw)
     train_pairs = jnp.asarray(data["permuted_train_pairs"] if config.permuted_lexical_contexts else data["train_pairs"])
@@ -411,12 +418,18 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[di
         raw, lexical_state, _ = lexical_step(raw, lexical_state, train_pairs[batch_ids], train_negatives[batch_ids])
         step = update + 1
         if step % config.validation_every == 0 or step == config.lexical_updates:
+            if snapshot_callback is not None:
+                snapshot_callback('lexical', step, _copy_raw(raw))
             validation_loss = float(lexical_loss(raw, validation_pairs, validation_negatives))
             validation_auc = _lexical_auc(raw, free_energy, data, jnp)
             candidate = (validation_auc, validation_loss, step)
             if _is_better(candidate, lexical_best):
                 lexical_best, lexical_raw = candidate, _copy_raw(raw)
     raw = {name: jnp.asarray(value) for name, value in lexical_raw.items()}
+    if snapshot_callback is not None:
+        snapshot_callback('lexical_selected', lexical_best[2] if lexical_best else 0, _copy_raw(raw))
+    if branch == 'joint_from_initial':
+        raw = {name: jnp.asarray(value) for name, value in initial_raw.items()}
 
     joint_optimizer = optax.chain(optax.clip_by_global_norm(config.clip_norm), optax.adam(config.joint_lr))
     joint_state = joint_optimizer.init(raw)
@@ -429,7 +442,8 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[di
             lambda two: jax.vmap(lambda window: free_energy(parameters, window))(two)
         )(corrupt_batch)
         ranking = jnp.mean(jax.nn.softplus(0.25 + positives[:, None] - negatives))
-        return ranking + 0.25 * lexical_loss(parameters, auxiliary_pair_batch, auxiliary_negative_batch)
+        auxiliary = 0.25 * lexical_loss(parameters, auxiliary_pair_batch, auxiliary_negative_batch)
+        return auxiliary if branch == 'lexical_auxiliary' else ranking + auxiliary
 
     joint_step = jax.jit(
         lambda parameters, state, window_batch, corrupt_batch, pair_batch, negative_batch: _optimizer_step(
@@ -453,6 +467,8 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[di
         )
         step = update + 1
         if step % config.validation_every == 0 or step == config.joint_updates:
+            if snapshot_callback is not None:
+                snapshot_callback('joint', step, _copy_raw(raw))
             sense_accuracy, joint_validation_loss = _sense_accuracy_and_loss(
                 raw, free_energy, unary_probability, center_probability, data, jnp
             )
@@ -460,6 +476,8 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig()) -> tuple[di
             if _is_better(candidate, joint_best):
                 joint_best, joint_raw = candidate, _copy_raw(raw)
     final_raw = joint_raw
+    if snapshot_callback is not None:
+        snapshot_callback('joint_selected', joint_best[2] if joint_best else 0, _copy_raw(final_raw))
     params = _parameters({name: jnp.asarray(value) for name, value in final_raw.items()}, jnp)
     metrics: dict[str, float | int | str] = {
         "protocol.sha256": data["protocol_sha256"],
