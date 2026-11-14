@@ -7,6 +7,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 import mlflow
 from word_energy.ising.exact_training import _free_energy_factory, prepare_data
+from word_energy.synthetic import POOLS
 from word_energy.tracking import RunContract, log_contract, sha256_file, tracking_uri
 
 if __name__=='__main__':
@@ -18,6 +19,13 @@ if __name__=='__main__':
     ln=jnp.asarray(data['train_negatives'][data['lexical_schedule'][0]])
     ids=data['joint_schedule'][0]; windows=jnp.asarray(data['train_windows'][ids]); corrupt=jnp.asarray(data['train_corruptions'][ids])
     vp=jnp.asarray(data['validation_pairs']); vn=jnp.asarray(data['validation_negatives'])
+    train_anchors={f:sorted({int(t) for row,family in zip(data['train_windows'],data['train_families']) if family==f for t in row[1:]}) for f in ('F','R')}
+    anchor_ids=sorted(set(train_anchors['F']+train_anchors['R']))
+    id_names={value:key for key,value in data['ids'].items()}
+    groups={f:[int(t) for row,family in zip(data['validation_windows'],data['validation_families']) if family==f for t in row[1:]] for f in ('F','R')}
+    groups['M']=[data['ids'][token] for token in POOLS['M']]
+    bank=data['ids']['bank']
+    pair_ids={f:jnp.asarray([[bank,t] for t in ids],dtype=jnp.int32) for f,ids in groups.items()}
     def lexical(raw,pairs,neg):
         pos=jax.vmap(lambda row:energy(raw,row))(pairs)
         negatives=jax.vmap(lambda left,row:jax.vmap(lambda right:energy(raw,jnp.asarray([left,right],dtype=jnp.int32)))(row))(pairs[:,0],neg)
@@ -28,14 +36,19 @@ if __name__=='__main__':
         return jnp.mean(jax.nn.softplus(.25+pos[:,None]-neg))
     def objective(raw): return ranking(raw)+.25*lexical(raw,lp,ln)
     lex=jax.jit(lambda r:lexical(r,lp,ln)); vallex=jax.jit(lambda r:lexical(r,vp,vn)); rank=jax.jit(ranking)
-    grad=jax.jit(jax.grad(objective)); results={}
+    grad=jax.jit(jax.grad(objective)); lexgrad=jax.jit(jax.grad(lambda r:lexical(r,lp,ln)))
+    score=jax.jit(lambda r,p:jax.vmap(lambda row:-energy(r,row))(p)); results={}
     for label, values in payload['snapshots'].items():
         raw={k:jnp.asarray(v,dtype=jnp.float64) for k,v in values.items()}
-        lv=float(lex(raw)); rv=float(rank(raw)); g=grad(raw)
-        results[label]={'train_fixed_batch_lexical_loss':lv,'validation_lexical_loss':float(vallex(raw)),'train_fixed_batch_joint_ranking_loss':rv,'train_fixed_batch_joint_total':rv+.25*lv,'fixed_batch_joint_gradient_l2':float(np.sqrt(sum(float(jnp.sum(x*x)) for x in g.values()))),'gradient_l2_by_parameter':{k:float(jnp.linalg.norm(v)) for k,v in g.items()}}
+        lv=float(lex(raw)); rv=float(rank(raw)); g=grad(raw); lg=lexgrad(raw)
+        scores={f:np.asarray(score(raw,pairs)) for f,pairs in pair_ids.items()}
+        auc={f:float(np.mean((scores[f][:,None]>scores['M'][None,:])+.5*(scores[f][:,None]==scores['M'][None,:]))) for f in ('F','R')}
+        def token_grad(gradients, token):
+            return {'bias_l2':float(jnp.linalg.norm(gradients['biases'][token])),'internal_abs':abs(float(gradients['internal'][token]))}
+        results[label]={'train_fixed_batch_lexical_loss':lv,'validation_lexical_loss':float(vallex(raw)),'validation_lexical_auc_F':auc['F'],'validation_lexical_auc_R':auc['R'],'validation_lexical_macro_auc':(auc['F']+auc['R'])/2,'train_fixed_batch_joint_ranking_loss':rv,'train_fixed_batch_joint_total':rv+.25*lv,'fixed_batch_joint_gradient_l2':float(np.sqrt(sum(float(jnp.sum(x*x)) for x in g.values()))),'gradient_l2_by_parameter':{k:float(jnp.linalg.norm(v)) for k,v in g.items()},'fixed_batch_gradients_by_token':{id_names[t]:{'joint':token_grad(g,t),'lexical':token_grad(lg,t)} for t in [bank,*anchor_ids]}}
     mlflow.set_tracking_uri(tracking_uri()); mlflow.set_experiment('word-energy-exact-training')
     contract=RunContract(execution_tier='classical',device_class='cpu_gpu_simulator',model_family='ising_exact_attribution_objectives',energy_convention='dimensionless beta E; normalized Ising',variable_encoding='spins {-1,+1}',beta_temperature_convention='beta=1',sampler_schedule='read-only autodiff on fixed first training batches and validation lexical data',seed=seed,data_hash=sha256_file(ROOT/'experiments'/'runs'/'synthetic-split-manifest.json'),data_split='train fixed batches and validation only',graph_summary='3 tokens, 2 spins each, star',limitations='Fixed-batch gradients are diagnostic probes, not historical optimizer gradients; no test or hardware.')
-    with mlflow.start_run(run_name=f'ising-attribution-objectives-{branch}-seed{seed}') as run:
+    with mlflow.start_run(run_name=f'ising-attribution-objectives-complete-{branch}-seed{seed}') as run:
         log_contract(mlflow,contract,{'source_sha256':sha256_file(source),'fixed_batch':'lexical_schedule[0], joint_schedule[0]','snapshots':results})
         for label,values in results.items(): mlflow.log_metrics({f'{label}.{k}':v for k,v in values.items() if isinstance(v,float)})
         print(json.dumps({'run_id':run.info.run_id,'seed':seed,'branch':branch,'snapshots':len(results)}))

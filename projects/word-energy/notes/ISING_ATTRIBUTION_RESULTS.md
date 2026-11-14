@@ -62,8 +62,16 @@ untuk seed 17, 29, 43 (susunan original, joint dari awal, lexical tambahan):
 - 29: `c8ce2dde79914f61bd2ab518db97a2d8`, `d4ac5f67d54c4dd8bd0d1bdf7cde5fb0`, `94b94a9686764c01a4e2541008506e18`.
 - 43: `43174fc8f5a248bdac2a39c907bc8aa1`, `4807a9b2aadb49f0872f160190011994`, `b24173d3c06d4f6d90f3b4cfa4562b3e`.
 
-Lexical AUC dan gradient individu untuk setiap anchor pada setiap snapshot belum
-direkod. Resource peak juga tidak diukur; tetapan thread dibatasi kepada empat
+Lexical AUC validation serta gradient fixed-batch bagi setiap anchor dan `bank`
+telah ditambah untuk setiap snapshot. Ia ialah pemerhatian batch pertama yang
+dibekukan, bukan gradient sebenar setiap update. Sembilan run MLflow tambahan
+(susunan original, joint dari awal, lexical tambahan):
+
+- 17: `c62289c85750402fb3f3d82c98f998b5`, `73f7697836b54c2d9726c6006fb010f3`, `5eb2e47518a84965a4a8d9716cca257f`.
+- 29: `a6addc0f8ccd4e1f9179a61ce537c314`, `c549188ada4e4025aa8f673d64969810`, `03bf854f3c504d0c8efca9d2e624acb3`.
+- 43: `1f0725c3d5fd47da8e907f6440e52ed5`, `0577cedcbda94e3ebede7925f3807bd8`, `7f0ff439d28345b3bce34412a0362a74`.
+
+Resource peak tidak diukur; tetapan thread dibatasi kepada empat
 melalui environment, tetapi had memory dan masa keseluruhan belum diaudit secara
 menyeluruh. Critic 6.1 Sol Ultra mengesahkan kesimpulan endpoint dan membatasi
-interpretasi; protocol tidak boleh dianggap lengkap pada butiran tersebut.
+interpretasi; protocol tidak boleh dianggap lengkap pada butiran resource tersebut.

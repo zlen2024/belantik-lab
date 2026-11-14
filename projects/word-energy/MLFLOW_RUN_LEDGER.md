@@ -95,6 +95,27 @@ Eksperimen replay dan dua branch latihan seterusnya: sembilan run serta
 kesimpulan dan batas ukuran disenaraikan dalam
 [hasil attribution](notes/ISING_ATTRIBUTION_RESULTS.md).
 
+Sembilan run tambahan `ising-attribution-objectives-complete-*` mencatat AUC
+validation dan gradient fixed-batch setiap anchor pada snapshot sedia ada.
+ID setiap run dan batas gradient probe dalam nota attribution yang sama.
+
+Ujian transplant awal `bank`: `1f1703f05c2345388878f7e6cf4a941c`
+(background29/donor43) dan `e542fda97aa0442fa7b390f23c0b72b4`
+(background43/donor29). Tujuan menguji pengaruh tiga parameter awal bank;
+29 kekal sense 0.5, 43 kekal 1.0; kedua-dua lexical AUC 1.0 pada validation.
+Control, protocol dan batas hasil ada dalam [nota transplant](notes/ISING_BANK_TRANSPLANT_PROTOCOL.md).
+
+Ujian F/R anchor transplant: `18a3b4c0af9248f58299234ea381f70f`
+(background29/donor43) dan `ec16dbc2d3294b10be99aa19eb9cd2d1`
+(background43/donor29). Fixed lexical400 sense 1.0 dan 0.5 masing-masing;
+kedua-duanya lexical AUC 1.0. [Protokol dan controls](notes/ISING_ANCHOR_TRANSPLANT_PROTOCOL.md)
+menerangkan bahawa dua swap exploratory tidak membuktikan generalisasi.
+
+Anchor bias-only transplant: `0fa55ff18422464593bc755f0aba849a` (29/43)
+dan `ca6d88b60cd14aeb9b76d5d5eb285c9d` (43/29). Fixed lexical400 sense
+1.0 dan 0.5; kedua-duanya AUC 1.0. Butiran dan controls dalam
+[nota bias transplant](notes/ISING_ANCHOR_BIAS_TRANSPLANT_PROTOCOL.md).
+
 ## 4. `word-energy-gaussian-lexical` — baseline lexical sahaja
 
 | ID run | Tujuan / hipotesis | Pemboleh ubah | Hasil | Kesimpulan |
