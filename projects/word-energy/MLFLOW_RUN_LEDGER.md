@@ -73,7 +73,9 @@ apa yang boleh atau belum boleh disimpulkan.
 **Kesimpulan eksperimen Ising:** precheck tiga-seed gagal gate sebab seed 29 tidak
 membezakan sense. Random control dan permuted control pula menunjukkan metrik
 kecil ini bukan bukti kukuh sendiri. Ia bukan keputusan “Ising mustahil”, tetapi
-hipotesis pilot ini belum disokong pada protokol sekarang.
+hipotesis pilot ini belum disokong pada protokol sekarang. Critique dan tindakan
+read-only yang dicadangkan direkod dalam
+[`notes/ISING_PILOT_CRITIQUE.md`](notes/ISING_PILOT_CRITIQUE.md).
 
 ## 4. `word-energy-gaussian-lexical` — baseline lexical sahaja
 
@@ -168,8 +170,10 @@ lebih luas.
 
 ## Lokasi bukti
 
-- Tracker: `tracking/mlflow.db` dan `tracking/artifacts/` (dua-dua diabaikan
-  Git tetapi perlu dibackup bersama).
+- Tracker metadata: `tracking/mlflow.db`. Semak `artifact_uri` run sebelum backup:
+  run semasa menggunakan `mlruns/<experiment>/<run>/artifacts/`, bukannya
+  `tracking/artifacts/`. Kedua-dua lokasi lokal yang dirujuk oleh tracker perlu
+  dibackup bersama; jangan andaikan satu root artifact untuk semua run lama.
 - Frozen Gaussian protocol:
   [`plans/word2energy/M2_CONTEXTUAL_HOLDOUT_MANIFEST.md`](plans/word2energy/M2_CONTEXTUAL_HOLDOUT_MANIFEST.md).
 - Frozen vector control:
