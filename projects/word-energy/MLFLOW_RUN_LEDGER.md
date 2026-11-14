@@ -116,6 +116,12 @@ dan `ca6d88b60cd14aeb9b76d5d5eb285c9d` (43/29). Fixed lexical400 sense
 1.0 dan 0.5; kedua-duanya AUC 1.0. Butiran dan controls dalam
 [nota bias transplant](notes/ISING_ANCHOR_BIAS_TRANSPLANT_PROTOCOL.md).
 
+Family-mean bias transfer `b559a7bb1fce43848160af1e83f88e4d` (29←43)
+dan `96ac384afd1d477bb215d5545f4ec924` (43←29): exploratory fixed lexical400
+sense 1.0 dan 0.5; validation lexical AUC 1.0 kedua-duanya. Perbezaan per-token
+daripada background dikekalkan, dan purata family dipindah. Controls dan batas
+di [nota family mean](notes/ISING_FAMILY_MEAN_BIAS_PROTOCOL.md).
+
 Run sintesis per-anchor `246f97dfb76d4c91b30bce7940f87f31` menganalisis
 21 snapshot untuk setiap satu daripada lapan kes asal/transplant tanpa latihan
 baharu. Tujuan: mengenal pasti sama ada collapse tertumpu pada beberapa token
