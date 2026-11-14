@@ -158,10 +158,10 @@ lebih luas.
    control juga sempurna.
 3. **Pilot Ising masih belum boleh dinaikkan taraf.** Satu daripada tiga seed
    gagal dan controls menunjukkan toy metric mudah dipengaruhi initialization.
-4. **Arah seterusnya yang berdisiplin:** perluaskan sampler audit daripada dua
-   fixture kepada semua validation window, kemudian hanya bandingkan classical
-   MCMC dengan THRML/Torx pada fixture yang sama. Selepas itu barulah reka task
-   yang lebih sukar / natural-text scale; jangan tune lagi pada frozen test.
+4. **Sampler classical kini lulus gate tiga-seed pada semua 18 validation
+   window** (tambahan bertarikh 15 November di bawah). Langkah berikutnya ialah
+   menerjemah fixture/observable sama ke THRML atau Torx dan mengukur parity
+   terhadap reference classical; jangan tune lagi pada frozen test.
 
 ## Lokasi bukti
 
@@ -173,3 +173,35 @@ lebih luas.
   [`plans/word2energy/CONTEXTUAL_VECTOR_HOLDOUT_MANIFEST.md`](plans/word2energy/CONTEXTUAL_VECTOR_HOLDOUT_MANIFEST.md).
 - Ising/Z1 plan dan batas claim hardware:
   [`plans/word2energy/WORD_ENERGY_Z1_FIRST_PLAN.md`](plans/word2energy/WORD_ENERGY_Z1_FIRST_PLAN.md).
+
+---
+
+## Addendum 15 November 2026 — sampler audit seluruh validation split
+
+Semasa memperluas audit dua-fixture, run batch awal merangkumi row `0–11`
+sahaja: semua enam F dan enam R. Semakan gabungan mendedahkan validation split
+sebenar mempunyai **18 row** (`0–17`), dengan enam distractor M pada `12–17`.
+Ini ialah *coverage error* pada laporan awal, bukan perubahan checkpoint atau
+protocol. Artifact separa tidak dipadam. Enam row M kemudian diaudit dengan
+jadual sama: empat chain tersebar, burn-in 500, 2,000 retained sweeps/chain,
+seed deterministik mengikut row, quadrature order 12.
+
+Critic bebas menyemak kod/data dan mengesahkan audit membaca hanya
+`validation_windows` serta sense map daripada train anchors; ia tidak menggunakan
+test untuk memilih checkpoint atau metrik sampler. Perincian pembetulan dan
+had claim ada dalam
+[`notes/SAMPLER_AUDIT_COVERAGE_CORRECTION.md`](notes/SAMPLER_AUDIT_COVERAGE_CORRECTION.md).
+
+| ID run | Tujuan / hipotesis | Pemboleh ubah | Hasil | Kesimpulan |
+|---|---|---|---|---|
+| `486fec85383b4568b4f8967b9b96a4b1`, `9bebb825b23b4d7b9443009cd1c803b1`, `96e23d346b5744afb36b3d109af4fe6c` — seed17 row 0–1, 2–3, 4–5 | Rekod batch F pertama sambil mengelak had masa proses. | Row validation sahaja; schedule tidak berubah. | Artifact meliputi row 0–5. | Bahan bukti separa, kemudian digabungkan. |
+| `c081789041884b52acfdd39f4d007f23`, `bce36765dec1462987c7c994bb49c962` — seed17 row 6–7; `796f0e9cc7664008b845a2fcf55e4a10`, `c8855934a5b944e980b646d24b63abd1` — row 8–9; `883d5442b49749b1b32b11cb113c521a`, `03335c86b164409fa36cf6dca3d19258` — row 10–11 | Rekod batch R seed17. | Sama; sesetengah batch re-log selepas proses UI tamat lewat. | Duplicate dalam setiap pasangan mempunyai metric/artifact sama. | Duplicate ialah rekod tracker, bukan run saintifik baharu. |
+| `bc5f465f9ca1418899799be6ef27dfdb` — seed17 `all-validation` | Gabung dan nilai kesemua 18 row selepas M ditambah. | 18 row F/R/M; 4×(500 + 2,000). | Acceptance 0.9160–0.9394; max R-hat 1.000668; min ESS 5,292.8; max MCSE 0.00656; worst error 0.01092 (row7 finance basin, bound 0.02). | Semua gate lulus. |
+| `1a666423fd884b95ba84d7b1fea8ecec` — seed29 `all-validation` | Ulang split-wide audit seed29. | Seed sahaja. | Acceptance 0.9137–0.9391; max R-hat 1.000829; min ESS 4,981.3; max MCSE 0.00671; worst error 0.01217 (row7 finance basin, bound 0.02). | Semua gate lulus. |
+| `7806a4c8ef4d4745a99cc4e115350b42` — seed43 `all-validation` | Ulang split-wide audit seed43. | Seed sahaja. | Acceptance 0.9167–0.9388; max R-hat 1.000718; min ESS 5,003.8; max MCSE 0.00703; worst error 0.01375 (row6 finance basin, bound 0.02). | Semua gate lulus. |
+
+**Kesimpulan addendum:** classical independence-MH sampler kini melepasi gate
+yang dipersetujui pada tiga seed dan semua 18 validation row untuk checkpoint
+Gaussian joint M2 ini. Ini mengesahkan sampler vs quadrature pada toy tersebut;
+ia tidak menunjukkan semantic advantage, natural-text generalization, THRML/Torx
+parity, atau execution pada physical thermodynamic hardware.

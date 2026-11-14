@@ -24,8 +24,22 @@ if __name__ == "__main__":
         action="store_true",
         help="log the audit artifact generated with --all-validation",
     )
+    parser.add_argument(
+        "--validation-rows",
+        type=str,
+        default=None,
+        help="log the bounded validation-row batch generated with --validation-rows",
+    )
     arguments = parser.parse_args()
-    scope = "all-validation" if arguments.all_validation else "two-fixture"
+    if arguments.all_validation and arguments.validation_rows:
+        parser.error("--all-validation and --validation-rows cannot be used together")
+    if arguments.validation_rows:
+        selected_rows = tuple(int(value) for value in arguments.validation_rows.split(","))
+        if not selected_rows or len(set(selected_rows)) != len(selected_rows):
+            parser.error("--validation-rows must contain unique row numbers")
+        scope = "validation-rows-" + "-".join(str(index) for index in selected_rows)
+    else:
+        scope = "all-validation" if arguments.all_validation else "two-fixture"
     artifact = PROJECT_ROOT / "experiments" / "runs" / f"gaussian-joint-sampler-audit-{scope}-seed{arguments.seed}.json"
     result = json.loads(artifact.read_text(encoding="utf-8"))
     metrics: dict[str, float] = {}
@@ -51,13 +65,21 @@ if __name__ == "__main__":
             data_split=(
                 "all fixed validation windows; contextual holdout not used for sampler tuning"
                 if arguments.all_validation
-                else "two fixed validation windows; contextual holdout not used for sampler tuning"
+                else (
+                    f"fixed validation rows {arguments.validation_rows}; contextual holdout not used for sampler tuning"
+                    if arguments.validation_rows
+                    else "two fixed validation windows; contextual holdout not used for sampler tuning"
+                )
             ),
             graph_summary="L=3 complete graph, unary independence MH proposals, random site order",
             limitations=(
                 "Classical MCMC audit across the validation split only; not THRML/Torx or physical hardware."
                 if arguments.all_validation
-                else "Initial sampler fixture only: two validation windows and one model seed. Classical MCMC, not THRML/Torx or physical hardware."
+                else (
+                    "Bounded classical MCMC audit batch only; combine all validation-row batches before making split-wide claims. Not THRML/Torx or physical hardware."
+                    if arguments.validation_rows
+                    else "Initial sampler fixture only: two validation windows and one model seed. Classical MCMC, not THRML/Torx or physical hardware."
+                )
             ),
         )
         log_contract(mlflow, contract, result)

@@ -1,0 +1,4 @@
+# Numerical Word Energy reference environment (CPU)
+# Keep MLflow in requirements-tracking.txt so tracking can remain lightweight.
+jax[cpu]==0.12.0.1
+optax==0.2.9
