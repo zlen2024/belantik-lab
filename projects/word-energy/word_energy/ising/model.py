@@ -27,6 +27,7 @@ class IsingWordEnergy:
     interaction_weights: np.ndarray  # [2]
     beta: float = 1.0
     coupling_scale: float = 1.0
+    normalize_spokes: bool = False  # legacy reference uses a unit coefficient per spoke
 
     def __post_init__(self) -> None:
         biases = np.asarray(self.biases, dtype=np.float64)
@@ -60,8 +61,9 @@ class IsingWordEnergy:
         energy = np.zeros(states.shape[:-2], dtype=np.float64)
         for position, token in enumerate(tokens):
             energy += self.unary_energy(int(token), states[..., position, :])
+        scale = self.coupling_scale / (len(tokens) - 1) if self.normalize_spokes and len(tokens) > 1 else self.coupling_scale
         for position in range(1, len(tokens)):
-            energy -= self.beta * self.coupling_scale * np.sum(
+            energy -= self.beta * scale * np.sum(
                 self.interaction_weights * states[..., 0, :] * states[..., position, :], axis=-1
             )
         return energy

@@ -1,5 +1,21 @@
 # Ledger run MLflow — Word Energy
 
+> **Pembetulan penting:** audit 15 November menemui perbezaan faktor dua antara
+> coupling F3 Ising yang dilaksanakan dan pelan asal. Interpretasi run Ising
+> berkenaan mesti membaca [nota audit F3](notes/ISING_F3_COUPLING_CONTRACT_DISCREPANCY.md).
+> Data dan keputusan sejarah kekal sebagai rekod implementation yang digunakan.
+
+> **Validation selepas correction:** pilihan `normalize_spokes=True` mengikut
+> pelan F3 kini tersedia. Tiga run `25f97015403c40498623fa2c8c3b8290` (17),
+> `232f088b9f2342c0ba2f03357d259bac` (29), `91c8470602464d108dc5097820a5c85b`
+> (43) menggunakan lexical checkpoint asal dan latihan joint corrected 100
+> update. Sense validation 1.0 / 0.5 / 1.0; kesimpulan lama berkenaan gate
+> tidak ditukar. Protocol, sensitivity dan batas dalam
+> [nota F3 corrected](notes/ISING_F3_CORRECTED_VALIDATION_PROTOCOL.md).
+> Correction metadata hash snapshot: `af9346e54b8a4c8ca0a6bf3b196854f9`
+> (17), `af3e61da516747e99138ce9a78b82f79` (29),
+> `3422d7d51d0448b1809dd06514e5ba32` (43); rekod asal tidak diubah.
+
 Snapshot ini menerangkan **setiap 78 run aktif** dalam tracker MLflow lokal pada
 14 November 2026. Ia diwujudkan supaya paparan MLflow yang panjang boleh dibaca
 sebagai cerita penyelidikan: soalan apa diuji, apa yang berubah, keputusan, dan

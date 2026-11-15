@@ -41,6 +41,7 @@ class ExactTrainingConfig:
     clip_norm: float = 5.0
     validation_every: int = 20
     permuted_lexical_contexts: bool = False
+    normalize_spokes: bool = False  # legacy runs used unnormalized per-spoke F3
 
 
 def token_index() -> dict[str, int]:
@@ -69,7 +70,7 @@ def jax_nn_sigmoid(values, jnp):
     return 1.0 / (1.0 + jnp.exp(-values))
 
 
-def _free_energy_factory():
+def _free_energy_factory(normalize_spokes: bool = False):
     jax, jnp, _ = _imports()
     unary_states = _spin_states(jnp, 2)
     pair_states = _spin_states(jnp, 4).reshape(-1, 2, 2)
@@ -95,8 +96,9 @@ def _free_energy_factory():
         energy = jnp.zeros(states.shape[0], dtype=jnp.float64)
         for position in range(tokens.shape[0]):
             energy = energy + unary_energy(parameters, tokens[position], states[:, position])
+        scale = coupling_scale / (tokens.shape[0] - 1) if normalize_spokes else coupling_scale
         for position in range(1, tokens.shape[0]):
-            energy = energy - coupling_scale * jnp.sum(
+            energy = energy - scale * jnp.sum(
                 parameters["interaction"] * states[:, 0] * states[:, position], axis=-1
             )
         return -jax.scipy.special.logsumexp(-energy) + sum(
@@ -109,8 +111,9 @@ def _free_energy_factory():
         energy = jnp.zeros(triple_states.shape[0], dtype=jnp.float64)
         for position in range(3):
             energy = energy + unary_energy(parameters, tokens[position], triple_states[:, position])
+        scale = coupling_scale / 2 if normalize_spokes else coupling_scale
         for position in range(1, 3):
-            energy = energy - coupling_scale * jnp.sum(
+            energy = energy - scale * jnp.sum(
                 parameters["interaction"] * triple_states[:, 0] * triple_states[:, position], axis=-1
             )
         weights = jax.nn.softmax(-energy)
@@ -296,7 +299,7 @@ def _region_mass(probability: np.ndarray, region_f: np.ndarray, equal: np.ndarra
     return float(probability[region_f].sum() + 0.5 * probability[equal].sum())
 
 
-def evaluate_checkpoint(raw: dict[str, np.ndarray], split: str = "test") -> dict[str, float]:
+def evaluate_checkpoint(raw: dict[str, np.ndarray], split: str = "test", *, normalize_spokes: bool = False) -> dict[str, float]:
     """Evaluate a fixed checkpoint without using labels as inference inputs.
 
     The map is derived only from train anchors. ``split`` is explicit so callers
@@ -304,7 +307,7 @@ def evaluate_checkpoint(raw: dict[str, np.ndarray], split: str = "test") -> dict
     """
     if split not in {"validation", "test"}:
         raise ValueError("split must be 'validation' or 'test'")
-    _, jnp, free_energy, unary_probability, center_probability = _free_energy_factory()
+    _, jnp, free_energy, unary_probability, center_probability = _free_energy_factory(normalize_spokes)
     data = prepare_data()
     region_f, equal = _sense_region(raw, unary_probability, data)
     ids = data["ids"]
@@ -372,7 +375,7 @@ def _copy_raw(raw) -> dict[str, np.ndarray]:
 def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig(), *, snapshot_callback=None, branch: str = 'original', initial_override=None) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
     """Run the frozen protocol (or a shorter smoke subset) and select checkpoints."""
     jax, jnp, optax = _imports()
-    _, _, free_energy, unary_probability, center_probability = _free_energy_factory()
+    _, _, free_energy, unary_probability, center_probability = _free_energy_factory(config.normalize_spokes)
     data = prepare_data()
     vocab_size = len(vocabulary())
     key = jax.random.key(config.seed)
