@@ -1,5 +1,13 @@
 # Ledger run MLflow — Word Energy
 
+> Sembilan run development initializer `ising-spectral-init-*` pada seeds
+> 101/103/107 serta fixed lexical400/joint100 disenaraikan dalam
+> [hasil spectral initializer](notes/ISING_SPECTRAL_INITIALIZER_RESULTS.md).
+> Spectral 3/3, random 1/3, satu kawalan permutasi 0/3 pada toy validation;
+> batas seperti oracle training dan bias spectral sama merentas seeds dijelaskan
+> dalam nota itu.
+> Audit lexical400 AUC/gain berasingan: `6343919160a4482594a73156edce1072`.
+
 > **Pembetulan penting:** audit 15 November menemui perbezaan faktor dua antara
 > coupling F3 Ising yang dilaksanakan dan pelan asal. Interpretasi run Ising
 > berkenaan mesti membaca [nota audit F3](notes/ISING_F3_COUPLING_CONTRACT_DISCREPANCY.md).
