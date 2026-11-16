@@ -374,7 +374,7 @@ def _copy_raw(raw) -> dict[str, np.ndarray]:
     return {name: np.asarray(value).copy() for name, value in raw.items()}
 
 
-def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig(), *, snapshot_callback=None, branch: str = 'original', initial_override=None, data_override=None) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
+def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig(), *, snapshot_callback=None, branch: str = 'original', initial_override=None, data_override=None, lexical_intervention=None) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
     """Run the frozen protocol (or a shorter smoke subset) and select checkpoints."""
     jax, jnp, optax = _imports()
     _, _, free_energy, unary_probability, center_probability = _free_energy_factory(config.normalize_spokes)
@@ -410,18 +410,42 @@ def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig(), *, snapshot
         )(pair_batch[:, 0], negative_batch)
         return jnp.mean(jax.nn.softplus(1.0 + positive[:, None] - negative))
 
-    lexical_step = jax.jit(
+    unregularized_step = jax.jit(
         lambda parameters, state, pair_batch, negative_batch: _optimizer_step(
             lexical_loss, lexical_optimizer, parameters, state, pair_batch, negative_batch
         )
     )
+    active_intervention = lexical_intervention is not None and float(lexical_intervention['strength']) != 0.0
+    if active_intervention:
+        from word_energy.ising.entropy_intervention import entropy_kl_to_uniform, schedule_weight
+        target = int(lexical_intervention['target_id'])
+        offset = int(lexical_intervention['offset'])
+        strength = float(lexical_intervention['strength'])
+        if not 0 <= target < vocab_size or offset not in (0, 100) or strength < 0:
+            raise ValueError('invalid lexical intervention')
+        def augmented_loss(parameters, pair_batch, negative_batch, coefficient):
+            return lexical_loss(parameters, pair_batch, negative_batch) + coefficient * entropy_kl_to_uniform(parameters, target)
+        lexical_step = jax.jit(
+            lambda parameters, state, pair_batch, negative_batch, coefficient: _optimizer_step(
+                augmented_loss, lexical_optimizer, parameters, state, pair_batch, negative_batch, coefficient
+            )
+        )
     lexical_best: tuple[float, float, int] | None = None
     lexical_raw = _copy_raw(raw)
     for update in range(config.lexical_updates):
         schedule_row = data["lexical_schedule"][update % len(data["lexical_schedule"])]
         batch_ids = schedule_row[: config.lexical_batch] if config.lexical_batch <= 64 else np.resize(schedule_row, config.lexical_batch)
-        raw, lexical_state, _ = lexical_step(raw, lexical_state, train_pairs[batch_ids], train_negatives[batch_ids])
+        if not active_intervention:
+            raw, lexical_state, _ = unregularized_step(raw, lexical_state, train_pairs[batch_ids], train_negatives[batch_ids])
+        else:
+            coefficient = strength * schedule_weight(update-offset)
+            if coefficient:
+                raw, lexical_state, _ = lexical_step(raw, lexical_state, train_pairs[batch_ids], train_negatives[batch_ids], coefficient)
+            else:
+                raw, lexical_state, _ = unregularized_step(raw, lexical_state, train_pairs[batch_ids], train_negatives[batch_ids])
         step = update + 1
+        if lexical_intervention is not None and snapshot_callback is not None and step in (50, 150):
+            snapshot_callback('lexical', step, _copy_raw(raw))
         if step % config.validation_every == 0 or step == config.lexical_updates:
             if snapshot_callback is not None:
                 snapshot_callback('lexical', step, _copy_raw(raw))
