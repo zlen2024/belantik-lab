@@ -11,6 +11,9 @@ if summary['panel_size'] != 72 or summary['strict_six_corpus_promotion']:
 lines = [
     '# Fresh synthetic Ising benchmark: results',
     '',
+    'Follow-up: the [eight-permutation exploratory panel](ISING_CORPUS227_PERMUTATION_PANEL_RESULTS.md) '
+    'has now been completed on selected corpus 227. It does not change this gate.',
+    '',
     '16 November 2026. All 72 scheduled runs completed in 2,828.31 seconds; '
     'the frozen six-corpus promotion gate **failed**. Source and protocol were '
     'committed before this panel as `1178334`. See '

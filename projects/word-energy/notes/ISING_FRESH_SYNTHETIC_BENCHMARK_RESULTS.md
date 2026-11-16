@@ -1,5 +1,8 @@
 # Fresh synthetic Ising benchmark: results
 
+Follow-up: the [eight-permutation exploratory panel](ISING_CORPUS227_PERMUTATION_PANEL_RESULTS.md)
+has now been completed on selected corpus 227. It does not change this gate.
+
 16 November 2026. All 72 scheduled runs completed in 2,828.31 seconds; the frozen six-corpus promotion gate **failed**. Source and protocol were committed before this panel as `1178334`. See [protocol](ISING_FRESH_SYNTHETIC_BENCHMARK_PROTOCOL.md) and [independent corpus 227 critic](ISING_FRESH_CORPUS_227_CRITIC.md).
 
 Each cell below is the number of four paired model seeds passing all three joint100 thresholds: sense >= 10/12, lexical AUC >= 0.75, and mean context gain >= 0.03. The condition required spectral to exceed both controls on every corpus, so its tie with the fixed permutation on corpus 227 fails the gate.
