@@ -124,10 +124,10 @@ def _free_energy_factory(normalize_spokes: bool = False):
     return jax, jnp, window_free_energy, unary_probability, joint_center_probability
 
 
-def _valid_grammar_pairs(ids: dict[str, int]) -> set[tuple[int, int]]:
+def _valid_grammar_pairs(ids: dict[str, int], pools=POOLS) -> set[tuple[int, int]]:
     """All ordered token pairs permitted by the synthetic grammar, not model scores."""
     valid: set[tuple[int, int]] = set()
-    for family, anchors in POOLS.items():
+    for family, anchors in pools.items():
         center = ids["song"] if family == "M" else ids["bank"]
         members = [center, *(ids[token] for token in anchors)]
         valid.update((left, right) for left in members for right in members if left != right)
@@ -168,25 +168,26 @@ def _negative_table(
     return result
 
 
-def _corruptions(windows: np.ndarray, families: tuple[str, ...], ids: dict[str, int]) -> np.ndarray:
+def _corruptions(windows: np.ndarray, families: tuple[str, ...], ids: dict[str, int], pools=POOLS) -> np.ndarray:
     """Create two fixed cross-pool anchor replacements per canonical window."""
     rng = np.random.default_rng(202)
     corrupted = np.empty((len(windows), 2, 3), dtype=np.int32)
-    pool_names = tuple(POOLS)
+    pool_names = tuple(pools)
     for row, (window, family) in enumerate(zip(windows, families)):
         alternatives = tuple(name for name in pool_names if name != family)
         for corruption_index, slot in enumerate((1, 2)):
             replacement_pool = alternatives[rng.integers(0, len(alternatives))]
-            replacement = POOLS[replacement_pool][rng.integers(0, len(POOLS[replacement_pool]))]
+            replacement = pools[replacement_pool][rng.integers(0, len(pools[replacement_pool]))]
             corrupted[row, corruption_index] = window
             corrupted[row, corruption_index, slot] = ids[replacement]
     return corrupted
 
 
-def prepare_data() -> dict[str, Any]:
+def prepare_data(*, corpus=None) -> dict[str, Any]:
     """Return the frozen corpus-derived protocol, including batch IDs and hashes."""
-    ids = token_index()
-    splits = split_windows()
+    ids = token_index() if corpus is None else {token: index for index, token in enumerate(corpus['vocabulary'])}
+    splits = split_windows() if corpus is None else corpus['splits']
+    pools = POOLS if corpus is None else corpus['pools']
     rows = {
         name: np.asarray([[ids[token] for token in row.tokens] for row in values], dtype=np.int32)
         for name, values in splits.items()
@@ -195,7 +196,7 @@ def prepare_data() -> dict[str, Any]:
     train_pairs = _ordered_pairs(rows["train"])
     validation_pairs = _ordered_pairs(rows["validation"])
     probabilities = _frequency(rows["train"], len(ids))
-    valid_pairs = _valid_grammar_pairs(ids)
+    valid_pairs = _valid_grammar_pairs(ids, pools)
     train_negatives = _negative_table(train_pairs, probabilities, valid_pairs, seed=6060)
     validation_negatives = _negative_table(validation_pairs, probabilities, valid_pairs, seed=7070)
     lexical_schedule = np.random.default_rng(4040).choice(len(train_pairs), size=(400, 64), replace=True).astype(np.int32)
@@ -214,16 +215,17 @@ def prepare_data() -> dict[str, Any]:
         "validation_pairs": validation_pairs,
         "train_negatives": train_negatives,
         "validation_negatives": validation_negatives,
-        "train_corruptions": _corruptions(rows["train"], families["train"], ids),
-        "validation_corruptions": _corruptions(rows["validation"], families["validation"], ids),
+        "train_corruptions": _corruptions(rows["train"], families["train"], ids, pools),
+        "validation_corruptions": _corruptions(rows["validation"], families["validation"], ids, pools),
         "lexical_schedule": lexical_schedule,
         "joint_schedule": joint_schedule,
         "ids": ids,
+        "pools": pools,
     }
     frozen = {
         name: value.tolist() if isinstance(value, np.ndarray) else value
         for name, value in result.items()
-        if name not in {"ids", "permuted_train_pairs"}
+        if name not in {"ids", "permuted_train_pairs", "pools"}
     }
     result["protocol_sha256"] = _sha256(frozen)
     result["schedule_sha256"] = _sha256(
@@ -235,7 +237,7 @@ def prepare_data() -> dict[str, Any]:
 def _lexical_auc(raw, free_energy, data, jnp) -> float:
     """Macro pairwise AUC: bank-F vs M and bank-R vs M on validation anchors."""
     ids = data["ids"]
-    bank, music = ids["bank"], [ids[token] for token in POOLS["M"]]
+    bank, music = ids["bank"], [ids[token] for token in data.get('pools', POOLS)["M"]]
     scores: dict[str, list[float]] = {"F": [], "R": [], "M": []}
     for window, actual_family in zip(data["validation_windows"], data["validation_families"]):
         if actual_family in {"F", "R"}:
@@ -299,7 +301,7 @@ def _region_mass(probability: np.ndarray, region_f: np.ndarray, equal: np.ndarra
     return float(probability[region_f].sum() + 0.5 * probability[equal].sum())
 
 
-def evaluate_checkpoint(raw: dict[str, np.ndarray], split: str = "test", *, normalize_spokes: bool = False) -> dict[str, float]:
+def evaluate_checkpoint(raw: dict[str, np.ndarray], split: str = "test", *, normalize_spokes: bool = False, data_override=None) -> dict[str, float]:
     """Evaluate a fixed checkpoint without using labels as inference inputs.
 
     The map is derived only from train anchors. ``split`` is explicit so callers
@@ -308,7 +310,7 @@ def evaluate_checkpoint(raw: dict[str, np.ndarray], split: str = "test", *, norm
     if split not in {"validation", "test"}:
         raise ValueError("split must be 'validation' or 'test'")
     _, jnp, free_energy, unary_probability, center_probability = _free_energy_factory(normalize_spokes)
-    data = prepare_data()
+    data = prepare_data() if data_override is None else data_override
     region_f, equal = _sense_region(raw, unary_probability, data)
     ids = data["ids"]
     windows = data[f"{split}_windows"]
@@ -338,11 +340,11 @@ def evaluate_checkpoint(raw: dict[str, np.ndarray], split: str = "test", *, norm
     def pairwise_auc(positive_tokens: tuple[str, ...]) -> float:
         bank = ids["bank"]
         positive = [-float(free_energy(raw, jnp.asarray([bank, ids[token]], dtype=jnp.int32), 1.0)) for token in positive_tokens]
-        negative = [-float(free_energy(raw, jnp.asarray([bank, ids[token]], dtype=jnp.int32), 1.0)) for token in POOLS["M"]]
+        negative = [-float(free_energy(raw, jnp.asarray([bank, ids[token]], dtype=jnp.int32), 1.0)) for token in data.get('pools', POOLS)["M"]]
         return float(np.mean([1.0 if a > b else 0.5 if a == b else 0.0 for a in positive for b in negative]))
 
-    auc_f = pairwise_auc(POOLS["F"])
-    auc_r = pairwise_auc(POOLS["R"])
+    auc_f = pairwise_auc(data.get('pools', POOLS)["F"])
+    auc_r = pairwise_auc(data.get('pools', POOLS)["R"])
     return {
         f"{split}.macro_sense_accuracy": float(np.mean([np.mean(credits["F"]), np.mean(credits["R"])])),
         f"{split}.correct_region_posterior": float(np.mean(conditional_mass)),
@@ -372,12 +374,12 @@ def _copy_raw(raw) -> dict[str, np.ndarray]:
     return {name: np.asarray(value).copy() for name, value in raw.items()}
 
 
-def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig(), *, snapshot_callback=None, branch: str = 'original', initial_override=None) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
+def train_smoke(config: ExactTrainingConfig = ExactTrainingConfig(), *, snapshot_callback=None, branch: str = 'original', initial_override=None, data_override=None) -> tuple[dict[str, np.ndarray], dict[str, float | int | str]]:
     """Run the frozen protocol (or a shorter smoke subset) and select checkpoints."""
     jax, jnp, optax = _imports()
     _, _, free_energy, unary_probability, center_probability = _free_energy_factory(config.normalize_spokes)
-    data = prepare_data()
-    vocab_size = len(vocabulary())
+    data = prepare_data() if data_override is None else data_override
+    vocab_size = len(data['ids'])
     key = jax.random.key(config.seed)
     key, kb, kj = jax.random.split(key, 3)
     raw = {

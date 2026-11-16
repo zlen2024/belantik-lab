@@ -20,9 +20,9 @@ def diagnose(seed, checkpoint_kind='ising-exact-training'):
     return diagnose_raw(raw, seed, checkpoint_kind, sha256_file(checkpoint))
 
 
-def diagnose_raw(raw, seed, checkpoint_kind, checkpoint_hash, normalize_spokes=False):
+def diagnose_raw(raw, seed, checkpoint_kind, checkpoint_hash, normalize_spokes=False, data_override=None):
     _, jnp, energy, unary, center = _free_energy_factory(normalize_spokes)
-    data = prepare_data()
+    data = prepare_data() if data_override is None else data_override
     anchors = {family: [int(token) for row, label in zip(data['train_windows'], data['train_families']) if label == family for token in row[1:]] for family in ('F', 'R')}
     q = {family: np.mean([np.asarray(unary(raw, token)) for token in tokens], axis=0) for family, tokens in anchors.items()}
     region = q['F'] > q['R']
