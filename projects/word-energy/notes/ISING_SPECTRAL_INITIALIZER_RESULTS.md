@@ -1,5 +1,9 @@
 # Keputusan development: spectral bias initialization
 
+**Susulan 16 November:** [benchmark enam corpus baharu](ISING_FRESH_SYNTHETIC_BENCHMARK_RESULTS.md)
+tidak memenuhi gate perbandingan ketat: satu corpus menunjukkan spectral dan
+kawalan permutasi seri. Keputusan awal di bawah kekal sebagai rekod sejarah.
+
 15 November 2026. Protokol [initializer](ISING_LABEL_FREE_INITIALIZER_DRAFT.md)
 dibekukan sebelum run. Tiga seed `101/103/107`, tiga arms, fixed handoff
 lexical400→joint100 dan corrected F3. Setiap run menggunakan exact enumeration
