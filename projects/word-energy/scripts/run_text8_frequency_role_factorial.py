@@ -27,7 +27,8 @@ def record_failure(experiment_id, arm, seed, reason, stdout, stderr):
         if isinstance(value,bytes): return value.decode('utf-8',errors='replace')
         return value or ''
     payload={'reason':reason,'arm':arm,'seed':seed,'stdout':decode(stdout),'stderr':decode(stderr)}
-    with tempfile.TemporaryDirectory() as temporary:
+    temp_root=ROOT/'.tmp'; temp_root.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=temp_root) as temporary:
         path=Path(temporary)/'failure.json'; path.write_text(json.dumps(payload,indent=2),encoding='utf-8')
         client.log_artifact(run.info.run_id,str(path),'interruption')
     client.set_tag(run.info.run_id,'interruption_reason',reason)
