@@ -29,6 +29,8 @@ lines += [f"| Frequency-only, tanpa training | {freq['noise_pairwise_auc']:.4f} 
           'Ranking vector dan Ising berkongsi objective; SGNS menggunakan '
           'objective berbeza. Model juga berbeza parameter count dan simetri. '
           'Tiga seed berkongsi teks, sample dan noise; bukan tiga corpus bebas.', '',
+          'Lihat [semakan critic](TEXT8_LEXICAL_DEVELOPMENT_CRITIC.md) dan '
+          '[analisis kekerapan posthoc](TEXT8_FREQUENCY_STRATA_POSTHOC_RESULTS.md).', '',
           'Vocabulary 1,000 token berasal daripada train sahaja. Token coverage '
           f"train {100*data['train_stats']['token_coverage']:.2f}% dan validation "
           f"{100*data['validation_stats']['token_coverage']:.2f}%; pasangan OOV "
