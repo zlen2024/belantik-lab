@@ -53,8 +53,23 @@ if summary:
     lines += ['| Permutasi | Baseline | Early bank | Late bank | Early song |','|---:|---:|---:|---:|---:|']
     for perm,arms in summary['counts'].items():
         lines.append(f"| {perm} | {arms['baseline']}/4 | {arms['early-bank']}/4 | {arms['late-bank']}/4 | {arms['early-song']}/4 |")
-    lines += ['',f"Kriteria beku: `{json.dumps(summary['frozen_criteria'],ensure_ascii=False)}`.",
-              f"Median perubahan entropy bank lexical100: `{json.dumps(summary['median_paired_entropy_differences'])}` nats.",
+    criteria=summary['frozen_criteria']
+    lines += ['',
+              f"Practical rescue: **{'lulus' if criteria['practical_rescue'] else 'gagal'}**; "
+              '7043 memerlukan sekurang-kurangnya 3/4 tetapi hanya mencapai 2/4. '
+              f"Manipulation check 7043: {'lulus' if criteria['manipulation_7043'] else 'gagal'}; "
+              f"median perubahan entropy bank lexical100 {summary['median_paired_entropy_differences']['7043']:+.4f} nat. "
+              'Early-bank mengatasi late-bank pada 7043 sebanyak dua seed, tetapi '
+              'equal coefficient area tidak menjamin daya gradient yang sama. '
+              'Early-song mencapai 1/4 berbanding early-bank 2/4 pada 7043; '
+              'ini tidak membuktikan penargetan bank sebagai satu-satunya punca.', '',
+              'Pada 7027, early-bank menukar seed 251 daripada lulus kepada gagal, '
+              'dan seed 263 daripada gagal kepada lulus: kedua-dua arm mempunyai '
+              '2/4 tetapi bukan seed yang sama. Merentas 12 pasangan, early-bank '
+              'membantu 3, merosakkan 1 dan tidak mengubah 8. Semua 7019 lulus. '
+              'Lihat [audit critic akhir](ISING_ENTROPY_PANEL_FINAL_CRITIC.md), '
+              '[audit interim](ISING_ENTROPY_7043_INTERIM_CRITIC.md) '
+              'dan [nota sambungan serta gangguan](ISING_ENTROPY_RESUMPTION_20261117.md).', '',
               f'Ringkasan MLflow: `{summary_id}`.','']
 lines += ['Satu run lulus jika sense >=10/12, AUC>=0.75 dan gain>=0.03 pada joint100. '
           'Entropy yang meningkat sahaja bukan bukti dua makna dipelajari. Ini eksperimen '
