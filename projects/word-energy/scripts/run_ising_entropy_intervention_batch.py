@@ -51,8 +51,8 @@ def preflight(client):
 def compare_baseline(client, exp_id, perm, seed, old):
     matches=[run for run in client.search_runs([exp_id],max_results=1000)
              if run.data.tags.get('permutation_seed')==str(perm) and run.data.tags.get('seed')==str(seed)
-             and run.data.tags.get('arm')=='baseline']
-    if len(matches)!=1 or matches[0].info.status!='FINISHED': raise ValueError('baseline missing or failed')
+             and run.data.tags.get('arm')=='baseline' and run.info.status=='FINISHED']
+    if len(matches)!=1: raise ValueError('baseline missing or duplicated')
     path=ROOT/'mlruns'/exp_id/matches[0].info.run_id/'artifacts'/'config.json'
     new=json.loads(path.read_text(encoding='utf-8'))
     for name in ('stage1_initial_0','stage1_lexical_400','stage2_initial_0','stage2_joint_100'):

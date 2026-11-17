@@ -44,6 +44,9 @@ if __name__=='__main__':
     mlflow.set_tracking_uri(tracking_uri()); mlflow.set_experiment('word-energy-entropy-intervention-v1')
     with mlflow.start_run(run_name=f'corpus227-perm{permutation_seed}-{arm}-seed{seed}') as run, log_partial(seed,replicate,arm,permutation_seed,data['protocol_sha256'],snapshots):
         mlflow.set_tags({'execution_tier':'classical','device_class':'cpu_gpu_simulator','replicate':str(replicate),'seed':str(seed),'arm':arm,'permutation_seed':str(permutation_seed),'test_status':'reserved test not evaluated','protocol_sha256':data['protocol_sha256']})
+        retry_of=os.environ.get('WORD_ENERGY_RETRY_OF')
+        if retry_of:
+            mlflow.set_tags({'retry_of_run_id':retry_of,'restart_mode':'restart_from_initial_after_user_stop'})
         for path in (Path(__file__).resolve(),ROOT/'word_energy/fresh_synthetic.py',ROOT/'word_energy/ising/spectral_initializer.py',ROOT/'word_energy/ising/exact_training.py',ROOT/'scripts/diagnose_ising_validation.py',ROOT/'word_energy/ising/entropy_intervention.py',ROOT/'scripts/diagnose_corpus227_permutation_dynamics.py'):
             mlflow.log_artifact(str(path),'source_snapshot')
         mlflow.log_artifact(str(ROOT/'notes/ISING_ENTROPY_INTERVENTION_PROTOCOL.md'), 'protocol')
