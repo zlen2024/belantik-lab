@@ -47,7 +47,11 @@ def collect(data_id):
                 expected=base['train_pairs'] if sh==0 else fresh[f'pairs_{sh}']
                 if new and config['train_pair_hash']!=sha_array(expected):raise ValueError('train permutation mismatch')
                 if not new:
-                    if config['checkpoint_rule']!='fixed epoch3':raise ValueError('old checkpoint rule')
+                    if config['checkpoint_rule']!='fixed epoch3' or config['epochs']!=3 or config['batch']!=256 or config['learning_rate']!=.01 or config['gradient_clip']!=5.:raise ValueError('old training configuration mismatch')
+                    if sh==11330:
+                        if config['shuffle_seed']!=11330 or config['training_pairs']!='shuffled_train_pairs':raise ValueError('historical shuffle identity mismatch')
+                        p=ROOT/'scripts/train_text8_frequency_shuffle.py'
+                        if sha256_file(p)!=sha256_file(root/'source_snapshot'/p.name):raise ValueError('historical shuffle trainer mismatch')
                     for rel in ('word_energy/text8_factorial_models.py','word_energy/text8_canonical_eval.py','word_energy/text8_lexical_models.py','word_energy/ising/exact_training.py','scripts/train_text8_lexical_development.py','word_energy/text8_development.py'):
                         p=ROOT/rel
                         if sha256_file(p)!=sha256_file(root/'source_snapshot'/p.name):raise ValueError('historical source mismatch')
@@ -55,6 +59,9 @@ def collect(data_id):
                     hashes={p.name:sha256_file(p) for p in (root/'source_snapshot').iterdir() if p.is_file()}
                     if snapshots and hashes!=snapshots:raise ValueError('new source snapshots differ')
                     snapshots=hashes
+                    for rel in ('word_energy/text8_prior_vector.py','word_energy/text8_factorial_models.py','word_energy/text8_canonical_eval.py','word_energy/text8_lexical_models.py','word_energy/ising/exact_training.py'):
+                        p=ROOT/rel
+                        if sha256_file(p)!=hashes[p.name]:raise ValueError('fresh scorer differs from snapshot')
                 loaded={}
                 for stage in ('initial','epoch1','epoch2','epoch3'):
                     with np.load(root/'checkpoints'/f'{stage}.npz',allow_pickle=False) as z:p={k:z[k] for k in z.files}
@@ -79,7 +86,15 @@ def collect(data_id):
             original=results[f'{arm}:{seed}:0']['metrics']['noise_pairwise_auc']
             matrix.append([original-results[f'{arm}:{seed}:{sh}']['metrics']['noise_pairwise_auc'] for sh in SHUFFLES])
         arr=np.array(matrix);effects[arm]={'auc_original_minus_shuffle_seed_x_permutation':matrix,'all_permutation_mean':float(arr.mean()),'new_only_mean':float(arr[:,1:].mean()),'min':float(arr.min()),'max':float(arr.max()),'descriptive_gate':bool(np.all(arr>0) and arr.mean()>=.005)}
-    return {'fresh_data_run':data_id,'base_data_run':BASE,'data_hashes':meta['hashes'],'base_hashes':meta['base_array_hashes'],'source_sha256':meta['source']['content_sha256'],
+    contrasts={}
+    for arm in ARMS:
+        originals=[results[f'{arm}:{seed}:0']['metrics']['noise_pairwise_auc'] for seed in SEEDS]
+        freq=[v-meta['frequency_only']['noise_pairwise_auc'] for v in originals]
+        contrasts[arm]={'original_auc_per_seed':originals,'original_minus_frequency_only_per_seed':freq,'original_minus_frequency_only_mean':float(np.mean(freq))}
+        if arm!='vector-frequency':
+            diff=[v-results[f'vector-frequency:{seed}:0']['metrics']['noise_pairwise_auc'] for v,seed in zip(originals,SEEDS)]
+            contrasts[arm]['original_minus_vector_per_seed']=diff;contrasts[arm]['original_minus_vector_mean']=float(np.mean(diff))
+    return {'contrasts':contrasts,'fresh_data_run':data_id,'base_data_run':BASE,'data_hashes':meta['hashes'],'base_hashes':meta['base_array_hashes'],'source_sha256':meta['source']['content_sha256'],
       'source_snapshot_hashes':snapshots,'frequency_only':meta['frequency_only'],'matched_count':int(mask.sum()),'matched_frequency_only_auc':float(freqwins[mask].mean()),'results':results,'effects':effects,
       'limitations':'posthoc development, one text8 region, incomplete historical provenance; shared seeds/permutations, no semantic or hardware claims'}
 
@@ -91,4 +106,4 @@ if __name__=='__main__':
         log_contract(mlflow,contract,out)
         for arm,effect in out['effects'].items():mlflow.log_metric(f'{arm}.original_minus_shuffle_auc_mean',effect['all_permutation_mean']);mlflow.log_metric(f'{arm}.new_shuffle_only_mean',effect['new_only_mean'])
         mlflow.log_artifact(str(Path(__file__).resolve()),'source_snapshot')
-        print(json.dumps({'run_id':run.info.run_id,'frequency_only':out['frequency_only'],'matched_count':out['matched_count'],'matched_frequency_only_auc':out['matched_frequency_only_auc'],'effects':out['effects'],'results':out['results']},indent=2))
+        print(json.dumps({'run_id':run.info.run_id,'frequency_only':out['frequency_only'],'matched_count':out['matched_count'],'matched_frequency_only_auc':out['matched_frequency_only_auc'],'effects':out['effects'],'contrasts':out['contrasts'],'results':out['results']},indent=2))
