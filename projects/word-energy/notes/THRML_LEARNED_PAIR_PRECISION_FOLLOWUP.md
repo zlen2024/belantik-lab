@@ -1,0 +1,5 @@
+# THRML learned-pair precision follow-up
+
+18 November 2026. Initial frozen 4×2,000 samples run `219a97eea88f4a3487b0aaa87f29fb79` failed the MCSE ≤0.01 gate on 9 of 30 observables. Critic found all other gate components pass and estimated that some spin observables cannot meet the fixed threshold at 8,000 total draws even with independent samples. Preserve original failure.
+
+This separately frozen **adaptive follow-up** holds learned checkpoint, two pairs, 4 dispersed chains, warmup500, Gibbs blocks, seed17/29/43 and every original gate threshold unchanged. Increase to **8,000 draws per chain** (32,000 total) to target precision; no guarantee of pass. Compute identical rank-normalized split Rhat/ESS/MCSE using FFT autocovariance, checked numerically against the existing diagnostic on fixed synthetic and original-sample chains. Record both audits; no posthoc threshold change. THRML simulator CPU only, joint-law parity does not calculate free-energy ratio or map host frequency offset to chip.
