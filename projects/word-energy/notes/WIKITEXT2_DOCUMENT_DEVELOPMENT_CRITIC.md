@@ -10,3 +10,7 @@
 - Satu shuffle, tiga initialization berkongsi sampel, noise dan artikel. Kedua-dua dataset berasal daripada Wikipedia; near duplicates dan historical text8 overlap tidak dikecualikan. Test WikiText dan reserved text8 tidak dinilai; tiada THRML parity atau cip fizikal.
 
 Audit tidak menemui blocker angka atau protokol. Langkah seterusnya yang dibatasi: kekalkan keputusan sebagai bukti association pada dataset ini dan rancang perbandingan capacity-matched atau dataset domain lain, sebelum membuka reserved test bagi protokol yang benar-benar dibekukan.
+
+## Diagnostik critic posthoc (bukan kawalan pra-daftar)
+
+Critic turut mengira baseline calon sahaja `log(bincount(train_context)+1) - log(q_train)` menggunakan satu pseudocount tetap. Pada validation, micro AUC = 0.648435, macro artikel = 0.6497081 dan MRR = 0.2855999. Macro purata tiga model asal melebihi nilai ini kira-kira 0.02434/0.02956/0.03073. Ini pemeriksaan tambahan terhadap penjelasan marginal frequency, bukan bukti semantik atau kawalan utama yang dipilih sebelum run. Kod diagnostik critic dilaksanakan read-only dalam sesi audit dan tidak disimpan sebagai skrip berasingan; formula dan sumber data yang diperlukan untuk menghasilkannya direkod di sini.
