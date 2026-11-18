@@ -121,7 +121,7 @@ def execute():
         aucs=[auc(labels,s) for s in scores];ties=[float(np.mean(s[labels==1,None]==s[None,labels==0])) for s in scores]
         summaries[key]={'auc_per_seed':aucs,'auc_mean':float(np.mean(aucs)),'tie_fraction':ties,'target_cluster_bootstrap':bootstrap(labels,groups,scores)}
         if 'posterior_entropy_mean' in value:summaries[key]['posterior_entropy_mean']=value['posterior_entropy_mean']
-    return {'wic_sha256':SHA,'dataset_run_id':DATA,'dataset_hashes':m['hashes'],'source_runs':source_runs,'total_examples':len(rows),'eligible_examples':len(selected),
+    return {'correction_of':'13bb3b828d694c1f885d8eb0d22a2ec3','numerical_correction':'exact identical/opposite vector cosine and sorted bag contexts; no tolerance', 'wic_sha256':SHA,'dataset_run_id':DATA,'dataset_hashes':m['hashes'],'source_runs':source_runs,'total_examples':len(rows),'eligible_examples':len(selected),
       'excluded':dict(reasons),'target_in_vocab_examples':len(rows)-reasons['target_oov'],'all_positive':int(all_labels.sum()),'all_negative':int(len(all_labels)-all_labels.sum()),'excluded_positive':int(all_labels.sum()-labels.sum()),'excluded_negative':int((len(all_labels)-all_labels.sum())-(len(labels)-labels.sum())), 'context_slots':sum(r['context_slots1']+r['context_slots2'] for r in selected),'context_in_vocab':sum(len(r['context1'])+len(r['context2']) for r in selected),'positive_examples':int(labels.sum()),'negative_examples':int(len(labels)-labels.sum()),'distinct_target_words':len(set(groups)),
       'context_lengths':dict(Counter(str((len(r['context1']),len(r['context2']))) for r in selected)),
       'selected':selected,'labels':labels.tolist(),'predictions':predictions,'summaries':summaries,'bank_illustrations':illustrations,
@@ -131,8 +131,8 @@ if __name__=='__main__':
     start=time.monotonic();mlflow.set_tracking_uri(tracking_uri());out=execute();out['elapsed_seconds']=time.monotonic()-start
     mlflow.set_experiment('word-energy-wic-context-probe')
     contract=RunContract(execution_tier='classical',device_class='cpu_gpu_simulator',model_family='wic_context_readout',energy_convention='exact normalized Ising star posterior or vector cosine; no physical energy',variable_encoding='spins {-1,+1} or 3D vectors',beta_temperature_convention='beta=1 for Ising',sampler_schedule='exact four-state latent center, no WiC training',seed=22150,data_hash=SHA,data_split='WiC validation only; all test splits untouched',graph_summary='bounded star; up to four context words',limitations=out['limitations'])
-    with mlflow.start_run(run_name='wic-development-context-probe') as run:
-        log_contract(mlflow,contract,out)
+    with mlflow.start_run(run_name='wic-development-context-probe-numerical-correction') as run:
+        mlflow.set_tag('correction_of',out['correction_of']);log_contract(mlflow,contract,out)
         for key,v in out['summaries'].items():mlflow.log_metric(key.replace(':','.')+'.auc_mean',v['auc_mean'])
         for p in (Path(__file__),ROOT/'word_energy/wic_context_probe.py',ROOT/'tests/test_wic_context_probe.py',ROOT/'notes/WIC_CONTEXT_PROBE_PROTOCOL.md'):mlflow.log_artifact(str(p),'source_snapshot')
         print(json.dumps({'run_id':run.info.run_id,'eligible':out['eligible_examples'],'total':out['total_examples'],'excluded':out['excluded'],'positive':out['positive_examples'],'negative':out['negative_examples'],'targets':out['distinct_target_words'],'summaries':out['summaries'],'bank':out['bank_illustrations']},indent=2))

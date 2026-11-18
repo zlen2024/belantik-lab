@@ -16,6 +16,7 @@ def extract(sentence,start,end,vocab,stats=False):
         if 0<=i<len(tokens):
             total+=1;w=tokens[i].group().lower()
             if w in vocab:ctx.append(vocab[w])
+    ctx.sort()  # The readout is a multiset; canonical order prevents permutation roundoff.
     return (ctx,total) if stats else ctx
 
 def unary(b,k):return softmax(STATES@(2.5*np.tanh(b))+(STATES[:,0]*STATES[:,1])*(2*np.tanh(k)))
@@ -36,7 +37,9 @@ def negative_js(p,q):
 def cosine(x,y):
     a=np.linalg.norm(x);b=np.linalg.norm(y)
     if not np.isfinite(a*b) or a<1e-14 or b<1e-14:raise ValueError('zero/nonfinite representation')
-    return float(x@y/(a*b))
+    if np.array_equal(x,y):return 1.0
+    if np.array_equal(x,-y):return -1.0
+    return float(np.clip(x@y/(a*b),-1.,1.))
 
 def auc(labels,scores):
     labels=np.asarray(labels);scores=np.asarray(scores);p=scores[labels==1];n=scores[labels==0]
