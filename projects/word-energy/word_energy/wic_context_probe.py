@@ -5,16 +5,18 @@ from scipy.special import expit,softmax
 STATES=np.array([[-1.,-1.],[1.,-1.],[-1.,1.],[1.,1.]])
 TOKEN=re.compile(r'[A-Za-z]+')
 
-def extract(sentence,start,end,vocab):
+def extract(sentence,start,end,vocab,stats=False):
     tokens=list(TOKEN.finditer(sentence));hits=[i for i,x in enumerate(tokens) if x.start()<end and x.end()>start]
     if len(hits)!=1 or start<0 or end>len(sentence) or start>=end:return None
-    center=hits[0];ctx=[]
+    center=hits[0]
+    if tokens[center].start()!=start or tokens[center].end()!=end:return None
+    ctx=[];total=0
     for delta in (-2,-1,1,2):
         i=center+delta
         if 0<=i<len(tokens):
-            w=tokens[i].group().lower()
+            total+=1;w=tokens[i].group().lower()
             if w in vocab:ctx.append(vocab[w])
-    return ctx
+    return (ctx,total) if stats else ctx
 
 def unary(b,k):return softmax(STATES@(2.5*np.tanh(b))+(STATES[:,0]*STATES[:,1])*(2*np.tanh(k)))
 

@@ -62,12 +62,26 @@ def execute():
     for row in rows:
         word=row['word'].lower()
         if word not in vocab:reasons['target_oov']+=1;continue
-        c1=extract(row['sentence1'],row['start1'],row['end1'],vocab);c2=extract(row['sentence2'],row['start2'],row['end2'],vocab)
+        c1=extract(row['sentence1'],row['start1'],row['end1'],vocab,stats=True);c2=extract(row['sentence2'],row['start2'],row['end2'],vocab,stats=True)
         if c1 is None or c2 is None:reasons['invalid_span']+=1;continue
-        if not c1 or not c2:reasons['empty_in_vocab_context']+=1;continue
-        selected.append({'idx':row['idx'],'word':word,'target':vocab[word],'context1':c1,'context2':c2})
+        if not c1[0] or not c2[0]:reasons['empty_in_vocab_context']+=1;continue
+        selected.append({'idx':row['idx'],'word':word,'target':vocab[word],'context1':c1[0],'context2':c2[0],'context_slots1':c1[1],'context_slots2':c2[1]})
     if not selected:raise ValueError('no eligible examples')
-    predictions={};source_runs={};illustrations={}
+    predictions={};source_runs={};illustrations={};vector_cache={}
+    for arm in ('shared3','directed3'):
+        for seed in SEEDS:
+            p,rid=model(client,'word-energy-wikitext2-matched-vectors',arm,seed,'epoch3')
+            vector_cache[(arm,seed)]=p;source_runs[f'{arm}:{seed}']=rid
+    safe=[]
+    for row in selected:
+        try:
+            for (arm,seed),p in vector_cache.items():
+                for target_cond in (True,False):
+                    cosine(vectors(p,row['target'],row['context1'],arm=='shared3',target_cond),vectors(p,row['target'],row['context2'],arm=='shared3',target_cond))
+            safe.append(row)
+        except ValueError:reasons['zero_or_nonfinite_vector']+=1
+    selected=safe
+    if not selected:raise ValueError('no common valid examples')
     for arm in ('tied-frequency','role-frequency'):
         role=arm=='role-frequency'
         for mode,stage in [('original','epoch3'),('shuffled','epoch3'),('initial','initial')]:
@@ -84,7 +98,7 @@ def execute():
     for arm in ('shared3','directed3'):
         shared=arm=='shared3';series=[];context_only=[]
         for seed in SEEDS:
-            p,rid=model(client,'word-energy-wikitext2-matched-vectors',arm,seed,'epoch3');source_runs[f'{arm}:{seed}']=rid
+            p=vector_cache[(arm,seed)]
             x=[];y=[]
             for row in selected:
                 for target_cond,dest in ((True,x),(False,y)):
@@ -98,6 +112,8 @@ def execute():
     label_rows=pq.read_table(WIC,columns=['idx','label']).to_pylist();label_map={r['idx']:r['label'] for r in label_rows}
     labels=np.array([label_map[r['idx']] for r in selected],dtype=np.int32)
     if not set(labels.tolist())<={0,1} or len(set(labels.tolist()))!=2:raise ValueError('invalid labels/subset')
+    all_labels=np.array([r['label'] for r in label_rows],dtype=np.int32)
+    if not set(all_labels.tolist())<={0,1}:raise ValueError('invalid full labels')
     groups=[r['word'] for r in selected];summaries={}
     for key,value in predictions.items():
         scores=[np.asarray(s,dtype=float) for s in value['scores']]
@@ -106,7 +122,7 @@ def execute():
         summaries[key]={'auc_per_seed':aucs,'auc_mean':float(np.mean(aucs)),'tie_fraction':ties,'target_cluster_bootstrap':bootstrap(labels,groups,scores)}
         if 'posterior_entropy_mean' in value:summaries[key]['posterior_entropy_mean']=value['posterior_entropy_mean']
     return {'wic_sha256':SHA,'dataset_run_id':DATA,'dataset_hashes':m['hashes'],'source_runs':source_runs,'total_examples':len(rows),'eligible_examples':len(selected),
-      'excluded':dict(reasons),'positive_examples':int(labels.sum()),'negative_examples':int(len(labels)-labels.sum()),'distinct_target_words':len(set(groups)),
+      'excluded':dict(reasons),'target_in_vocab_examples':len(rows)-reasons['target_oov'],'all_positive':int(all_labels.sum()),'all_negative':int(len(all_labels)-all_labels.sum()),'excluded_positive':int(all_labels.sum()-labels.sum()),'excluded_negative':int((len(all_labels)-all_labels.sum())-(len(labels)-labels.sum())), 'context_slots':sum(r['context_slots1']+r['context_slots2'] for r in selected),'context_in_vocab':sum(len(r['context1'])+len(r['context2']) for r in selected),'positive_examples':int(labels.sum()),'negative_examples':int(len(labels)-labels.sum()),'distinct_target_words':len(set(groups)),
       'context_lengths':dict(Counter(str((len(r['context1']),len(r['context2']))) for r in selected)),
       'selected':selected,'labels':labels.tolist(),'predictions':predictions,'summaries':summaries,'bank_illustrations':illustrations,
       'limitations':'WiC development only, selected target/context in-vocabulary subset; novel untrained posterior; context/topic controls; CC-BY-NC-4; no benchmark test or hardware'}

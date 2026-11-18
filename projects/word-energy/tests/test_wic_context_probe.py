@@ -11,5 +11,5 @@ class WiCTest(unittest.TestCase):
   weights=np.array([pt[i]*q[j]*np.exp((STATES[i]*STATES[j])@g) for i,j in product(range(4),repeat=2)]).reshape(4,4)
   np.testing.assert_allclose(p,weights.sum(axis=1)/weights.sum(),atol=1e-15);self.assertAlmostEqual(negative_js(p,p),0.)
  def test_token_spans_and_auc(self):
-  v={'river':1,'money':2};self.assertEqual(extract('a bank by river',2,6,v),[1]);self.assertEqual(extract('bank money',0,4,v),[2]);self.assertIsNone(extract('bank',0,0,v));self.assertEqual(auc([1,0],[.3,.3]),.5)
+  v={'river':1,'money':2};self.assertEqual(extract('a bank by river',2,6,v),[1]);self.assertEqual(extract('bank money',0,4,v),[2]);self.assertIsNone(extract('bank',0,0,v));self.assertIsNone(extract('bank',1,4,v));self.assertEqual(extract('a bank by river',2,6,v,stats=True),([1],3));self.assertEqual(auc([1,0],[.3,.3]),.5)
 if __name__=='__main__':unittest.main()
