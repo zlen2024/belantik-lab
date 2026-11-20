@@ -1,0 +1,3 @@
+# Pembaikan perbandingan berpasangan
+
+Pada joint4 seed 29, cabang lama gagal hash pass pertama dengan beza parameter maksimum 6.73e-14. Eksperimen asal menggunakan syarat hash ketat dan kegagalan disimpan. Untuk perbandingan lengkap, mula dari satu objek parameter DAN optimizer state selepas pass pertama bagi setiap seed dan arm. Cabangkan objek sama kepada dua laluan A/A dan B/A untuk dua pass terakhir. Ini menguji intervensi A/A/A lawan A/B/A secara langsung. Guna semula enam konfigurasi, bajet, metric, panel dan gate yang dinyatakan sebelum ini. Bandingkan cabang kawalan baru dengan rank historical sebagai diagnostik sahaja. Tiada toleransi menggantikan keperluan keadaan permulaan sama antara cabang baru.
