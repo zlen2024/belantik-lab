@@ -1,0 +1,3 @@
+# Matched dummy control
+
+Frozen before execution: reuse the 219 manifest, 132 informative targets and three checkpoints of run `88afd4e4710a4da3b36080581905ff07`. For each candidate replace all other candidate leaves by uniform-unary dummies, retaining m+K leaves and g/(m+K). Calculate target-macro AUC and paired source-cluster bootstrap as in the original script, comparing shared, dummy and candidate-specific scores. No tuning, training, official test or chip run. Development labels have been inspected; confidence intervals are descriptive. Snapshot source and outputs in MLflow and seek independent critique.
