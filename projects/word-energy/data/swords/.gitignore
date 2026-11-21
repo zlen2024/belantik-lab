@@ -1,0 +1,2 @@
+# Keep the downloaded benchmark and derived local data outside the Git snapshot.
+*.json.gz
