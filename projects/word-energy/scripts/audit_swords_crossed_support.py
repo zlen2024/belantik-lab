@@ -7,6 +7,7 @@ import json
 import sys
 
 import mlflow
+from mlflow.tracking import MlflowClient
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
