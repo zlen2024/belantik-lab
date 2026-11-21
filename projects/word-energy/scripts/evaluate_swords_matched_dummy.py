@@ -1,6 +1,7 @@
 """Matched uniform-other-candidate control for the shared-star development probe."""
 from pathlib import Path
 import json
+import hashlib
 import sys
 import mlflow
 import numpy as np
@@ -22,6 +23,11 @@ def main():
     origin = artifact_dir(client, '6bfbcadfb039410dbc206f963b50d2bf')
     shared = artifact_dir(client, '88afd4e4710a4da3b36080581905ff07')
     manifest = json.loads((origin/'input_manifest.json').read_text(encoding='utf8'))
+    digest = hashlib.sha256(json.dumps(manifest['items'], sort_keys=True, separators=(',', ':')).encode('utf8')).hexdigest()
+    if digest != manifest['manifest_sha256'] or len(manifest['items']) != 219:
+        raise ValueError('manifest changed')
+    if len({item['target_id'] for item in manifest['items']}) != 219:
+        raise ValueError('duplicate target IDs in manifest')
     _, metadata = load(DATA)
     models = {s: load_checkpoint(client, ISING[s], metadata) for s in (17,29,43)}
     predictions = []
@@ -37,15 +43,22 @@ def main():
             for candidate in ids:
                 leaves = np.array([candidate]+[dummy]*(len(ids)-1), dtype=np.int64)
                 values.append(float(ising_shared_correlations(expanded,item['target'],item['context'],leaves)[0]))
+            if not np.isfinite(values).all() or np.any(np.abs(values) > 1 + 1e-12):
+                raise FloatingPointError('invalid dummy correlation')
             out['seeds'][str(seed)] = values
         predictions.append(out)
     historical = {x['target_id']: x for x in json.loads((origin/'target_results.json').read_text(encoding='utf8'))}
     prior = {x['target_id']: x for x in json.loads((shared/'target_results.json').read_text(encoding='utf8'))}
+    if len(historical) != 132 or set(historical) != set(prior):
+        raise ValueError('historical subset mismatch')
     rows=[]
     for item, pred in zip(manifest['items'], predictions):
         tid=item['target_id']
         if tid not in historical: continue
         fractions=historical[tid]['true_fraction']
+        if (historical[tid]['source'] != item['source'] or prior[tid]['source'] != item['source']
+                or len(fractions) != len(item['candidate_ids'])):
+            raise ValueError('historical source or candidate alignment mismatch')
         mask=np.array([v is not None for v in fractions])
         labels=np.array([v is not None and v>.5 for v in fractions])[mask]
         row={'target_id':tid,'source':item['source'],'scores':{}}
