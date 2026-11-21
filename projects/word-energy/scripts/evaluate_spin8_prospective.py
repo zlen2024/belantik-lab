@@ -34,6 +34,7 @@ def main(data_id):
     if jax.default_backend()!='cpu':raise ValueError('CPU required')
     saved={};doc_scores={}
     def calc(p,arm):
+        p={k:jnp.asarray(v) for k,v in p.items()}
         score=jax.jit(lambda x:scores(p,x,prior,arm,coupling_mode='redistribute',kernel_method='butterfly'))
         allscores=[]
         for i in range(0,len(pairs),128):

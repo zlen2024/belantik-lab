@@ -69,3 +69,10 @@ def test_full_score_and_all_parameter_gradients_dense_vs_butterfly():
         v2,g2=jax.value_and_grad(lambda x:loss(x,'butterfly'))(p)
         np.testing.assert_allclose(float(v1),float(v2),atol=1e-12,rtol=0)
         for key in p:np.testing.assert_allclose(np.asarray(g1[key]),np.asarray(g2[key]),atol=1e-11,rtol=1e-10)
+
+def test_jitted_reload_from_numpy_checkpoint():
+    jax,jnp,_=_imports();p=initial('ising8',17,4)
+    loaded={k:np.asarray(v) for k,v in p.items()}
+    restored={k:jnp.asarray(v) for k,v in loaded.items()}
+    f=jax.jit(lambda x:scores(restored,x,jnp.zeros(4),'ising8',coupling_mode='redistribute',kernel_method='butterfly'))
+    assert np.isfinite(np.asarray(f(jnp.asarray([[0,1],[2,3]])))).all()
