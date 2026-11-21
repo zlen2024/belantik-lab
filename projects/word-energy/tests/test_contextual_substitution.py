@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from scipy.special import expit
 
-from word_energy.contextual_substitution import (ising_active_correlations, ising_candidates,
+from word_energy.contextual_substitution import (ising_active_correlations, ising_active_uniform_context_control, ising_candidates,
     ising_context_only_candidates, ising_kernel_candidates, log_bhattacharyya, vector_candidates)
 from word_energy.wikitext_four_spin_wic import STATES, unary
 
@@ -102,3 +102,18 @@ def test_active_correlation_uniform_unary_known_answer():
     # Each edge has coupling 0.75/2 and uniform independent unary spins.
     np.testing.assert_allclose(ising_active_correlations(params, 0, [1], np.array([2])),
                                [np.tanh(.75/2)], atol=1e-12, rtol=0)
+
+
+def test_uniform_context_control_matches_pair_at_original_spoke_strength():
+    params = fixture()
+    q = unary(params)
+    m = 3
+    coupling = 1.5*expit(params['interaction'])/(m+1)
+    edge = (STATES*coupling) @ STATES.T
+    weights = q[0][:, None]*q[3][None, :]*np.exp(edge)
+    weights /= weights.sum()
+    expected = np.sum(weights*((STATES @ STATES.T)/4))
+    actual = ising_active_uniform_context_control(params, 0, m, np.array([3]))
+    np.testing.assert_allclose(actual, [expected], atol=1e-12, rtol=0)
+    with pytest.raises(ValueError):
+        ising_active_uniform_context_control(params, 0, 0, np.array([3]))

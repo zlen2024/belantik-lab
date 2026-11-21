@@ -107,6 +107,17 @@ def ising_active_correlations(params: dict[str, np.ndarray], target: int, contex
     return np.asarray(scores)
 
 
+def ising_active_uniform_context_control(params: dict[str, np.ndarray], target: int,
+                                         context_count: int, candidates: np.ndarray) -> np.ndarray:
+    """Remove context identity while retaining active-star spoke normalization."""
+    if context_count < 1:
+        raise ValueError('context count must be positive')
+    expanded = dict(params)
+    expanded['biases'] = np.vstack((params['biases'], np.zeros((1, 4))))
+    expanded['internal'] = np.vstack((params['internal'], np.zeros((1, 6))))
+    return ising_active_correlations(expanded, target, [len(params['biases'])]*context_count, candidates)
+
+
 def vector_candidates(params: dict[str, np.ndarray], target: int, contexts: list[int],
                       candidates: np.ndarray, *, mode: str = 'target_context',
                       similarity: str = 'cosine') -> np.ndarray:
