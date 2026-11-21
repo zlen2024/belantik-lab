@@ -1,6 +1,8 @@
 # Word Energy research
 
-This is the active workspace for Word Energy Embedding. The first implementation stage now contains exact references for both designs, a THRML simulator parity fixture, an explicit MLflow run contract, the frozen synthetic corpus generator, an exact-gradient Ising ranking precheck, and a completed classical Gaussian sampler audit. Neither model has been trained on natural text or executed on physical hardware.
+This is the active workspace for Word Energy Embedding. The first implementation stage contains exact references for both designs, THRML simulator fixtures, an MLflow run contract, synthetic corpora, Ising training prechecks, and a classical Gaussian sampler audit. Subsequent work trained four-spin Ising and matched vector models on WikiText natural text. The Gaussian joint experiments described below remain synthetic. No physical-hardware run has been recorded.
+
+For the latest matched full-vocabulary comparison and its limitations, see [results](notes/FULL_SOFTMAX_MATCHED_VECTOR_RESULTS.md) and [alignment critique](notes/MATCHED_VECTOR_ALIGNMENT_CRITIC.md). Later two-cue data audits and repeated contextual-sense results are recorded in [notes](notes/). The historical descriptions below preserve the research chronology and should not be read as the latest overall status.
 
 - [Primary Ising/Z1 plan](plans/word2energy/WORD_ENERGY_Z1_FIRST_PLAN.md)
 - [Gaussian baseline plan](plans/word2energy/WORD_ENERGY_EMBEDDING_V2_PLAN.md)
