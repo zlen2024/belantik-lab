@@ -3,7 +3,8 @@ import numpy as np
 import pytest
 from scipy.special import expit
 
-from word_energy.contextual_substitution import ising_candidates, ising_context_only_candidates, ising_kernel_candidates, log_bhattacharyya, vector_candidates
+from word_energy.contextual_substitution import (ising_active_correlations, ising_candidates,
+    ising_context_only_candidates, ising_kernel_candidates, log_bhattacharyya, vector_candidates)
 from word_energy.wikitext_four_spin_wic import STATES, unary
 
 
@@ -56,3 +57,48 @@ def test_vector_modes_and_validation():
         vector_candidates(vectors, 0, [], np.array([1]))
     with pytest.raises(ValueError):
         vector_candidates(vectors, 0, [3], np.array([1]))
+
+
+def test_active_correlation_matches_joint_enumeration_and_zero_coupling():
+    params = fixture()
+    q = unary(params)
+    g = 1.5*expit(params['interaction'])/2
+    edge = (STATES*g) @ STATES.T
+    logits = (np.log(q[0])[:, None, None] + np.log(q[1])[None, :, None]
+              + np.log(q[3])[None, None, :] + edge[:, :, None] + edge[:, None, :])
+    weights = np.exp(logits-logits.max())
+    weights /= weights.sum()
+    pair_correlation = (STATES @ STATES.T)/4
+    expected = np.sum(weights*pair_correlation[:, None, :])
+    actual = ising_active_correlations(params, 0, [1], np.array([3]))
+    np.testing.assert_allclose(actual, [expected], atol=1e-12, rtol=0)
+    params['interaction'] = np.full(4, -1000.)
+    target_mean, candidate_mean = q[0] @ STATES, q[3] @ STATES
+    zero_coupling = np.dot(target_mean, candidate_mean)/4
+    np.testing.assert_allclose(ising_active_correlations(params, 0, [1], np.array([3])),
+                               [zero_coupling], atol=1e-12, rtol=0)
+
+
+def test_active_correlation_handles_repeated_word_occurrences():
+    params = fixture()
+    q = unary(params)
+    g = 1.5*expit(params['interaction'])/3
+    edge = (STATES*g) @ STATES.T
+    # Target 0, two separate occurrences of context 1, and a separate
+    # candidate occurrence of word 0 share parameters, not spin states.
+    logits = (np.log(q[0])[:, None, None, None] + np.log(q[1])[None, :, None, None]
+              + np.log(q[1])[None, None, :, None] + np.log(q[0])[None, None, None, :]
+              + edge[:, :, None, None] + edge[:, None, :, None] + edge[:, None, None, :])
+    weights = np.exp(logits-logits.max())
+    weights /= weights.sum()
+    expected = np.sum(weights*((STATES @ STATES.T)/4)[:, None, None, :])
+    np.testing.assert_allclose(ising_active_correlations(params, 0, [1, 1], np.array([0])),
+                               [expected], atol=1e-12, rtol=0)
+
+
+def test_active_correlation_uniform_unary_known_answer():
+    params = {'biases': np.zeros((3, 4)), 'internal': np.zeros((3, 6)),
+              'interaction': np.zeros(4)}
+    # Each edge has coupling 0.75/2 and uniform independent unary spins.
+    np.testing.assert_allclose(ising_active_correlations(params, 0, [1], np.array([2])),
+                               [np.tanh(.75/2)], atol=1e-12, rtol=0)

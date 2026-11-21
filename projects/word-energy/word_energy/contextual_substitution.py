@@ -1,8 +1,8 @@
 """Candidate compatibility readouts for frozen contextual word representations.
 
-The Ising readout compares the target's active-window posterior with each
-external candidate's unary distribution. The candidate is not in the active
-window, and the resulting value is not a measured pair correlation.
+Affinity and kernel readouts compare the target's active-window posterior
+with an external candidate. The separate active-correlation readout places
+each candidate in its own window and computes its joint spin correlation.
 """
 from __future__ import annotations
 
@@ -77,6 +77,34 @@ def ising_context_only_candidates(params: dict[str, np.ndarray], contexts: list[
     extended = np.vstack((q, np.full(q.shape[1], 1/q.shape[1])))
     reference = posterior(extended, 1.5*expit(params['interaction']), len(q), contexts)
     return log_bhattacharyya(reference, q[ids])
+
+
+def ising_active_correlations(params: dict[str, np.ndarray], target: int, contexts: list[int],
+                              candidates: np.ndarray) -> np.ndarray:
+    """Exact target-candidate spin correlations within each candidate's star.
+
+    Each candidate is an active leaf in its own target-centered window along
+    with the provided contexts. Other candidate words are not active in that
+    window. All spokes use the production coupling divided by their count.
+    Adding the candidate changes both the equilibrium and each context spoke
+    from g/m to g/(m+1), where m is the original number of context tokens.
+    """
+    q = unary(params)
+    ids = np.asarray(candidates, dtype=np.int64)
+    if ids.ndim != 1 or np.any(ids < 0) or np.any(ids >= len(q)) or not 0 <= target < len(q):
+        raise ValueError('invalid target or candidate IDs')
+    if not contexts or any(c < 0 or c >= len(q) for c in contexts):
+        raise ValueError('contexts must be nonempty valid token IDs')
+    coupling = 1.5*expit(params['interaction'])
+    edge = (STATES * (coupling/(len(contexts)+1))) @ STATES.T
+    products = (STATES @ STATES.T)/STATES.shape[1]
+    scores = []
+    for candidate in ids:
+        reference = posterior(q, coupling, target, [*contexts, int(candidate)])
+        log_weights = edge + np.log(q[candidate])[None, :]
+        conditional = np.exp(log_weights-logsumexp(log_weights, axis=1, keepdims=True))
+        scores.append(float(np.sum(reference[:, None]*conditional*products)))
+    return np.asarray(scores)
 
 
 def vector_candidates(params: dict[str, np.ndarray], target: int, contexts: list[int],
