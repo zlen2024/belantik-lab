@@ -1,0 +1,20 @@
+# Sokongan data latihan untuk ranking konteks
+
+21 November 2026. Kedua-dua audit hanya membaca entry latihan daripada arkib rasmi [ALaSca](https://sapienzanlp.github.io/alasca/), SHA-256 `0198abbe7f39ac6b5aa67ed6caf389795ad684cd9a2e0339ecc9e3640c55545b`. Arkib menyatakan lesen CC BY-NC-SA 4.0; data mentah kekal lokal, dan penggunaan komersial tidak diliputi lesen itu. Tiada entry dev/test dibuka. Data dan model belum dilatih.
+
+| Sumber latihan | Baris dibaca | Baris dengan target dan cue dalam vocabulary | Pasangan explicit dengan skor berbeza | Kumpulan target/candidate yang menunjukkan reversal |
+|---|---:|---:|---:|---:|
+| ALaSca, silver automatik | 37,468 | 14,133 | 0 | 0 |
+| TWSI, senarai pengganti manusia | 22,843 | 10,115 | 10,763 | 550 |
+
+Untuk ALaSca, 37,459 baris hanya mempunyai satu skor candidate dan sembilan mempunyai dua; kesemua sembilan tidak melepasi penapis target. Maka tiada dua skor explicit untuk pair loss pada subset ini, bukan bukti ALaSca tidak berguna untuk objective lain. MLflow pembetulan `7b37145da74c4dc9a3df61db491ae429`.
+
+Untuk TWSI, 550 kumpulan tersebut menghasilkan 2,701 pasangan *cell* reversal (gabungan cue dan arah skor), bukan 2,701 dokumen atau contoh bebas. Semakan critic mendapati 10,763 perbandingan strict berasal daripada 3,189 rekod, manakala 1,320 rekod terlibat dalam reversal. Skor ini berasal daripada senarai pengganti beranotasi manusia, dan perbezaan kekerapan pilihan bukan semestinya keputusan manusia yang membandingkan kedua-dua candidate secara langsung. Satu cue token mungkin tidak mengandungi maklumat yang menjelaskan pilihan dalam ayat penuh. MLflow pembetulan `1cf5ff5f7fec496487f3336c13c361c8`.
+
+Kiraan awal dalam run `d4ac54d5e85745f5a1a24effbcd31f25` dan `059ef615030a48498bddbd8d6e0e41cb` telah **digantikan**: CSV default salah mentafsir tanda petikan literal. Pembaikan `QUOTE_NONE` dan protokol `019975b` dilakukan setelah melihat output pertama, lalu audit pembetulan bersifat posthoc. Kedua-dua fail mempunyai enam kolum pada setiap baris dengan parser yang diperbaiki. Critic GPT-6.2 Sol medium mengira semula hasil secara bebas. Ia menemui 185 konflik pada input target/candidate/cue yang sama, satu target menyumbang 808 daripada 2,701 pasangan reversal, dan 7,418 daripada 10,763 perbandingan mempunyai jurang skor hanya satu. Hanya 201 pasangan reversal mempunyai contoh dengan jurang sekurang-kurangnya dua pada kedua-dua sisi. Konflik, concentration dan label lemah perlu diambil kira sebelum training; jangan tukar threshold ini selepas melihat hasil dan memanggilnya keputusan bebas.
+
+Untuk matematik, critic menggunakan `lake env lean --stdin`, Lean 4.36.0 dan Mathlib `fc4f59e577feb1a4956671bc04ac18aaaf8cd842` untuk memeriksa tiada pasangan dengan skor berbeza bagi senarai yang panjangnya ≤1 dan context offset yang sama tidak boleh membalikkan ranking tetap. Kedua-duanya menggunakan axioms `propext`, `Classical.choice`, `Quot.sound`, tanpa `sorryAx`. Bukti tidak mengesahkan kualiti anotasi atau generalisasi.
+
+Critic mencadangkan langkah kesiapsiagaan data yang terhad: cari metadata sumber asal TWSI, semak pendua dan overlap WikiText, dan periksa sama ada cue yang model terima menyokong label apabila dibandingkan dengan ayat penuh. Paper TWSI menerangkan gabungan penggantian yang diperoleh secara langsung dan diproyeksikan mengikut sense, jadi skor paket bukan semestinya undian bebas bagi setiap baris. Ujian gabungan implementasi 13/13 lulus. Arah ranking di sini ialah weak supervision, bukan penilaian manusia yang disahkan untuk setiap pasangan. [Paper TWSI asal](https://www.inf.uni-hamburg.de/en/inst/ab/lt/publications/2012-biemann-lrec-tbwsi.pdf).
+
+Kedua-dua dataset menggunakan sumber Wikipedia menurut paper ALaSca; persilangan dengan corpus WikiText training tidak diaudit. Archive yang dilihat tidak membekalkan identiti dokumen dalam format ini, jadi hash ayat bukan bukti document-disjoint. Ini menguji ketersediaan data, bukan generalisasi model, penggunaan konteks yang sah atau kelebihan berbanding vector. Kekalkan official test tertutup sehingga reka bentuk latihan dan penilaian dibekukan.
