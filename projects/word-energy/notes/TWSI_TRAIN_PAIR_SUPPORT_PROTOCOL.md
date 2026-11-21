@@ -1,0 +1,3 @@
+# TWSI training pair support audit
+
+Before inspecting this entry: use `alasca_datasets/twsi_train.tsv` from ALaSca's pinned archive `0198abbe7f39ac6b5aa67ed6caf389795ad684cd9a2e0339ecc9e3640c55545b`. It contains human-produced substitute lists as documented by the ALaSca paper; verify counts and score semantics from the archive. Apply the same target, candidate, single-cue coverage and strict pair/reversal rules as `ALASCA_TRAIN_PAIR_SUPPORT_PROTOCOL.md`. No unlabeled candidate is assumed negative. No official dev/test entries are opened, no model trained. Sentence hash and target matching do not prove document independence or remove WikiText overlap. Treat as dataset feasibility only; retain output and independent critic.

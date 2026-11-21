@@ -19,12 +19,14 @@ from word_energy.tracking import RunContract,log_contract,sha256_file,tracking_u
 
 EXPECTED='0198abbe7f39ac6b5aa67ed6caf389795ad684cd9a2e0339ecc9e3640c55545b'
 def main():
+    source = sys.argv[1] if len(sys.argv) == 2 else 'alasca'
+    if source not in ('alasca', 'twsi') or len(sys.argv) > 2: raise ValueError('source must be alasca or twsi')
     path=ROOT/'data/alasca/alasca_dataset.zip'
     if sha256_file(path)!=EXPECTED: raise ValueError('archive hash mismatch')
     _, meta=load(DATA)
     vocab={w:i for i,w in enumerate(meta['vocabulary'])}
     counts=Counter(); cells=defaultdict(lambda: defaultdict(set)); sentences=set()
-    with zipfile.ZipFile(path) as z, z.open('alasca_datasets/alasca_train.tsv') as raw:
+    with zipfile.ZipFile(path) as z, z.open(f'alasca_datasets/{source}_train.tsv') as raw:
         reader=csv.reader(io.TextIOWrapper(raw,encoding='utf8'),delimiter='\t')
         for row in reader:
             counts['rows']+=1
@@ -66,12 +68,13 @@ def main():
     result={'counts':dict(counts),'unique_sentence_hashes_usable':len(sentences),
       'target_candidate_pair_groups':len(cells),'context_preference_cells':contextual_cells,
       'reversal_cell_pairs':reversals,'groups_with_reversal':eligible_groups,
-      'limitations':'automatic silver scores, one token context may not justify label; no document IDs, no human evaluation, no training; official test and dev entries unopened'}
+      'source':source,'limitations':'one token context may not justify label; no document IDs, no model evaluation or training; official test and dev entries unopened; alasca scores are automatic silver; twsi scores originate from human substitute lists'}
     mlflow.set_tracking_uri(tracking_uri()); mlflow.set_experiment('word-energy-natural-context-evaluation')
-    with mlflow.start_run(run_name='alasca-silver-training-pair-support-audit') as run:
-        log_contract(mlflow,RunContract('classical','cpu_gpu_simulator','dataset support audit','no model','token IDs','not applicable','deterministic scan',0,EXPECTED,'ALaSca silver training only','no graph',result['limitations']),result)
+    with mlflow.start_run(run_name=f'{source}-training-pair-support-audit') as run:
+        log_contract(mlflow,RunContract('classical','cpu_gpu_simulator','dataset support audit','no model','token IDs','not applicable','deterministic scan',0,EXPECTED,source+' training only','no graph',result['limitations']),result)
         mlflow.log_dict(result,'summary.json')
-        for p in (Path(__file__),ROOT/'notes/ALASCA_TRAIN_PAIR_SUPPORT_PROTOCOL.md'):mlflow.log_artifact(str(p),'source_snapshot')
+        protocol = 'TWSI_TRAIN_PAIR_SUPPORT_PROTOCOL.md' if source == 'twsi' else 'ALASCA_TRAIN_PAIR_SUPPORT_PROTOCOL.md'
+        for p in (Path(__file__),ROOT/'notes'/protocol):mlflow.log_artifact(str(p),'source_snapshot')
         print('RUN',run.info.run_id,json.dumps(result),flush=True)
 
 if __name__=='__main__':main()
