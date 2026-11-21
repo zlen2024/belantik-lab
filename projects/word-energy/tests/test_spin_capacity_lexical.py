@@ -2,7 +2,7 @@ import itertools
 import numpy as np
 from scipy.special import expit,softmax
 from word_energy.ising.exact_training import _imports
-from word_energy.spin_capacity_lexical import initial,scores,states_for,coupling_values,validate_pair_ids
+from word_energy.spin_capacity_lexical import initial,scores,states_for,coupling_values,validate_pair_ids,diagonal_kernel_apply
 
 def test_pair_exact_enumeration_symmetric_repeated_and_zero():
     _,jnp,_=_imports();p=initial('ising4',17,4);p={k:np.asarray(v) for k,v in p.items()}
@@ -49,3 +49,23 @@ def test_relative_w_gradient_finite_difference():
     plus['interaction']=p['interaction'].at[0].add(1e-5);minus['interaction']=p['interaction'].at[0].add(-1e-5)
     num=(float(f(plus))-float(f(minus)))/2e-5
     np.testing.assert_allclose(float(grad['interaction'][0]),num,atol=1e-7,rtol=1e-4)
+
+def test_butterfly_kernel_matches_dense_and_gradients():
+    jax,jnp,_=_imports();rng=np.random.default_rng(719)
+    for d in (4,6,8):
+        q=jnp.asarray(rng.uniform(.01,1,(3,1<<d)));g=jnp.asarray(rng.uniform(.01,.1,d))
+        states=states_for(d,jnp);dense=jnp.exp((states*g)@states.T)
+        np.testing.assert_allclose(np.asarray(diagonal_kernel_apply(q,g)),np.asarray(q@dense.T),rtol=1e-12,atol=1e-12)
+        bf=lambda x:jnp.sum(diagonal_kernel_apply(q,x)**2)
+        df=lambda x:jnp.sum((q@jnp.exp((states*x)@states.T).T)**2)
+        np.testing.assert_allclose(np.asarray(jax.grad(bf)(g)),np.asarray(jax.grad(df)(g)),rtol=1e-11,atol=1e-9)
+
+def test_full_score_and_all_parameter_gradients_dense_vs_butterfly():
+    jax,jnp,_=_imports();pairs=jnp.array([[0,1],[2,3],[0,0]],dtype=jnp.int32);prior=jnp.zeros(4)
+    for d in (6,8):
+        arm=f'ising{d}';p=initial(arm,17,4)
+        def loss(x,method):return jnp.sum(scores(x,pairs,prior,arm,coupling_mode='redistribute',kernel_method=method))
+        v1,g1=jax.value_and_grad(lambda x:loss(x,'dense'))(p)
+        v2,g2=jax.value_and_grad(lambda x:loss(x,'butterfly'))(p)
+        np.testing.assert_allclose(float(v1),float(v2),atol=1e-12,rtol=0)
+        for key in p:np.testing.assert_allclose(np.asarray(g1[key]),np.asarray(g2[key]),atol=1e-11,rtol=1e-10)
