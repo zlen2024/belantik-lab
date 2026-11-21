@@ -27,7 +27,7 @@ def main():
     vocab={w:i for i,w in enumerate(meta['vocabulary'])}
     counts=Counter(); cells=defaultdict(lambda: defaultdict(set)); sentences=set()
     with zipfile.ZipFile(path) as z, z.open(f'alasca_datasets/{source}_train.tsv') as raw:
-        reader=csv.reader(io.TextIOWrapper(raw,encoding='utf8'),delimiter='\t')
+        reader=csv.reader(io.TextIOWrapper(raw,encoding='utf8'),delimiter='\t',quoting=csv.QUOTE_NONE)
         for row in reader:
             counts['rows']+=1
             if len(row)!=6: counts['invalid_columns']+=1; continue
@@ -74,7 +74,7 @@ def main():
         log_contract(mlflow,RunContract('classical','cpu_gpu_simulator','dataset support audit','no model','token IDs','not applicable','deterministic scan',0,EXPECTED,source+' training only','no graph',result['limitations']),result)
         mlflow.log_dict(result,'summary.json')
         protocol = 'TWSI_TRAIN_PAIR_SUPPORT_PROTOCOL.md' if source == 'twsi' else 'ALASCA_TRAIN_PAIR_SUPPORT_PROTOCOL.md'
-        for p in (Path(__file__),ROOT/'notes'/protocol):mlflow.log_artifact(str(p),'source_snapshot')
+        for p in (Path(__file__),ROOT/'notes'/protocol,ROOT/'notes/TWSI_QUOTING_REPAIR_PROTOCOL.md'):mlflow.log_artifact(str(p),'source_snapshot')
         print('RUN',run.info.run_id,json.dumps(result),flush=True)
 
 if __name__=='__main__':main()

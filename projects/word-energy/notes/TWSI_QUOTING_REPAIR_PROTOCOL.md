@@ -1,0 +1,3 @@
+# TWSI literal-quote parsing repair
+
+Posthoc repair: after audit `059ef615030a48498bddbd8d6e0e41cb`, an independent field-count check revealed Python CSV default quote handling combines or splits TWSI lines with literal quote characters. The distribution changes from 22,410 parsed records (158 with non-six fields) to 22,843 six-field lines with `csv.QUOTE_NONE`. The same issue affects ALaSca: 37,356 parsed records become 37,468 six-field lines. Run both identical frozen audits with QUOTE_NONE. Both original audits remain in MLflow and are superseded. Do not open dev/test, revise filters, train, or claim source independence. The parser repair and counts were chosen after seeing the original result, so the corrected runs are posthoc data feasibility audits.
