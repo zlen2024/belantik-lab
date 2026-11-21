@@ -1,0 +1,11 @@
+# CoInCo dan SWORDS: semakan pertindihan sumber pembangunan
+
+Semakan metadata 21 November 2026 menggunakan CoInCo development daripada [repositori SWORDS rasmi](https://github.com/p-lambda/swords). Kedua-dua fail pembangunan dipin menggunakan SHA-256. Penilaian atau training model tidak dilakukan dan kedua-dua test split tidak dibuka. Parser memuatkan JSON lengkap, kemudian membuang mapping judgment tanpa menggunakan nilainya untuk audit.
+
+CoInCo development mengandungi 1,577 konteks dan 10,027 target mengikut file format ini, dengan 20 source-file proxies. SWORDS development mempunyai 19 proxies dan kesemuanya juga muncul dalam CoInCo development. Sebanyak 1,570 konteks dan 9,946 target CoInCo berkongsi proxy dengan SWORDS; hanya satu proxy CoInCo tambahan mempunyai tujuh konteks dan 81 target. Ini bukan 81 sumber bebas. Rujukan awal kiraan sumber telah diperhatikan sebelum protokol bertulis disimpan, jadi audit ini posthoc.
+
+Critic GPT-6.2 Sol ultra, digunakan selepas GPT-6.1 Sol ultra mencapai usage limit, mengira semula semua nilai ini daripada kedua-dua fail dan menyemak hash serta source snapshot. Semua konteks mempunyai satu source proxy. Semakan deskriptifnya menemui 49 context ID yang sama antara kedua-dua set. Tujuh konteks daripada source tambahan tidak mempunyai context ID atau urutan token ter-casefold yang sepadan tepat dengan SWORDS development. Semakan ini tidak menolak near-duplicate, overlap dengan training, hubungan topic/author, atau membuktikan bahawa contoh tersebut mengandungi reversal semantik. Tiada judgment value digunakan.
+
+Kesimpulannya, CoInCo development tidak boleh dianggap sumber bebas yang besar daripada SWORDS development hanya berdasarkan nama dataset. Untuk pemisahan berasaskan source proxy, hanya satu cluster tambahan diperhatikan. Maklumat ini membimbing pemilihan data pembangunan; ia tidak membuktikan model gagal, dan data ujian rasmi kekal tertutup. Rujuk juga [audit matched reversal](SWORDS_CROSSED_SUPPORT_AUDIT_RESULTS.md) dan [paper SWORDS](https://aclanthology.org/2021.naacl-main.345/) untuk konteks dataset.
+
+MLflow `word-energy-natural-context-evaluation`, run `85792bee6e1a4a119946b8b8b4f6a4f1`. Source files kekal lokal dan Git-ignored. Metadata audit code/protocol commit `ae73537`.

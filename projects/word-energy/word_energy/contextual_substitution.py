@@ -3,6 +3,8 @@
 Affinity and kernel readouts compare the target's active-window posterior
 with an external candidate. The separate active-correlation readout places
 each candidate in its own window and computes its joint spin correlation.
+The shared-correlation readout instead places all candidates in one star;
+its scores depend on the entire candidate set and its coupling normalization.
 """
 from __future__ import annotations
 
@@ -116,6 +118,38 @@ def ising_active_uniform_context_control(params: dict[str, np.ndarray], target: 
     expanded['biases'] = np.vstack((params['biases'], np.zeros((1, 4))))
     expanded['internal'] = np.vstack((params['internal'], np.zeros((1, 6))))
     return ising_active_correlations(expanded, target, [len(params['biases'])]*context_count, candidates)
+
+
+def ising_shared_correlations(params: dict[str, np.ndarray], target: int, contexts: list[int],
+                              candidates: np.ndarray) -> np.ndarray:
+    """Exact target-candidate correlations in one shared target-centered star.
+
+    Every context and candidate is a distinct active spin occurrence, even
+    when word IDs repeat. Couplings are g divided by the total leaf count.
+    Adding or removing any leaf changes the joint system and all spoke scales.
+    """
+    q = unary(params)
+    ids = np.asarray(candidates)
+    context_ids = np.asarray(contexts)
+    if not isinstance(target, (int, np.integer)) or isinstance(target, (bool, np.bool_)):
+        raise ValueError('target must be an integer token ID')
+    if ids.ndim != 1 or ids.dtype.kind not in 'iu' or not len(ids) or np.any(ids < 0) or np.any(ids >= len(q)) or not 0 <= target < len(q):
+        raise ValueError('invalid target or candidate IDs')
+    if context_ids.ndim != 1 or (len(context_ids) and context_ids.dtype.kind not in 'iu'):
+        raise ValueError('contexts must contain integer token IDs')
+    if np.any(context_ids < 0) or np.any(context_ids >= len(q)):
+        raise ValueError('invalid context token IDs')
+    ids = ids.astype(np.int64, copy=False)
+    leaves = np.concatenate((context_ids.astype(np.int64, copy=False), ids))
+    coupling = 1.5*expit(params['interaction'])/len(leaves)
+    edge = (STATES*coupling) @ STATES.T
+    log_messages = logsumexp(edge[None, :, :] + np.log(q[leaves])[:, None, :], axis=2)
+    log_center = np.log(q[target]) + np.sum(log_messages, axis=0)
+    center = np.exp(log_center-logsumexp(log_center))
+    log_candidate = edge[None, :, :] + np.log(q[ids])[:, None, :]
+    conditional = np.exp(log_candidate-logsumexp(log_candidate, axis=2, keepdims=True))
+    pair_products = (STATES @ STATES.T)/STATES.shape[1]
+    return np.sum(center[None, :, None]*conditional*pair_products[None, :, :], axis=(1, 2))
 
 
 def vector_candidates(params: dict[str, np.ndarray], target: int, contexts: list[int],
