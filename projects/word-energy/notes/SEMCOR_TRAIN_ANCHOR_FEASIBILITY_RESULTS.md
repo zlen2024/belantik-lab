@@ -1,0 +1,11 @@
+# SemCor: feasibility of train-only sense anchors
+
+22 November 2026. Protocol and code frozen in local commit `f566417`; MLflow run `3f7e521811bb4aa68fae1366f004256d`. This is an audit of data availability, not an evaluation of model accuracy.
+
+The deterministic document split selected 282 fit documents and reserved 70 documents. The script reads only the fit XML files. From 74,667 annotated noun occurrences, 18,643 passed the pre-specified vocabulary, sense-label, surface-form and context filters. Under the frozen thresholds, 201 candidate target words have at least two annotated senses, each represented at least five times across at least three fit documents. Examples include `act` (26 and 8 occurrences), `action` (38 and 9), and `air` (19 and 10). These counts do not establish sufficient held-out coverage or unambiguous contexts.
+
+SemCor's original annotations and its automatic WordNet version mapping can contain errors. The WikiText-derived vocabulary, choice of nouns and context heuristic restrict what this audit covers. Source overlap with WikiText has not been ruled out. No model, hardware, or THRML execution is evaluated here; the reserved 70 documents remain unopened. The next evaluation must freeze its model/prototype and baselines before reading reserved labels and must not adjust target selection using them.
+
+## Relationship to W
+
+The user's spring analogy motivates testing how trainable coupling strength affects context and semantic discrimination. Earlier original W was already trainable with total coupling up to 1.5; in a separate control the distribution of positive diagonal coupling was trainable but its sum was fixed at 0.8. The latter improved exploratory lexical AUC in that specific setup, but neither comparison establishes that W learns semantic compatibility, nor does it isolate learned total strength under matching parameterizations. Future work should compare fixed and trainable total coupling under the same architecture, initialization, compute, data and seeds, monitor W and gradients, and test generalization against frequency and context baselines. Coupling in this Ising model is an interaction coefficient; identifying it with physical spring stiffness requires an explicit physical mapping.
