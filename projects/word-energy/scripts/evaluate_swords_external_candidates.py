@@ -49,7 +49,7 @@ def build_manifest(data, vocabulary):
         if not contexts:
             reasons['no_context'] += 1
             continue
-        source_ids = {source.rsplit(':', 1)[0] for source in context['extra'].get('coinco_ids', [])}
+        source_ids = {source.split(':', 1)[0] for source in context['extra'].get('coinco_ids', [])}
         if len(source_ids) != 1:
             reasons['ambiguous_source'] += 1
             continue
@@ -139,13 +139,16 @@ def main():
         scoring_seconds = time.monotonic()-start_time
         mlflow.log_dict(scored, 'label_blind_predictions.json')
         # Judgments are processed only after the frozen manifest and all scores exist.
-        results, no_contrast, no_votes = [], 0, 0
+        results, no_contrast, no_votes, votes_by_target = [], 0, 0, {}
         for row, item in zip(manifest, scored):
-            labels, mask, fractions = [], [], []
+            labels, mask, fractions, vote_counts = [], [], [], []
             for sid_list in row['substitute_ids']:
-                votes = [vote for sid in sid_list for vote in data['substitute_labels'][sid] if vote != 'UNSURE']
+                all_votes = [vote for sid in sid_list for vote in data['substitute_labels'][sid]]
+                votes = [vote for vote in all_votes if vote != 'UNSURE']
                 if any(vote not in ('TRUE', 'FALSE') for vote in votes):
                     raise ValueError('unexpected judgment label')
+                vote_counts.append({'true': votes.count('TRUE'), 'false': votes.count('FALSE'),
+                                    'unsure': all_votes.count('UNSURE'), 'total': len(all_votes)})
                 if not votes:
                     no_votes += 1
                     labels.append(False)
@@ -156,12 +159,13 @@ def main():
                     labels.append(ratio > .5)
                     mask.append(True)
                     fractions.append(ratio)
+            votes_by_target[row['target_id']] = {'vote_counts': vote_counts, 'true_fraction': fractions}
             label = np.asarray(labels, dtype=bool)[mask]
             if not len(label) or label.all() or not label.any():
                 no_contrast += 1
                 continue
             row_result = {'target_id': row['target_id'], 'source': row['source'],
-                          'true_fraction': fractions, 'seed_metrics': {}, 'entropy': item['entropy']}
+                          'true_fraction': fractions, 'vote_counts': vote_counts, 'seed_metrics': {}, 'entropy': item['entropy']}
             for seed in (17, 29, 43):
                 scores = item['scores'][str(seed)]
                 metrics = {}
@@ -203,13 +207,39 @@ def main():
                 'per_seed': deltas.mean(axis=1).tolist(), 'ci95': np.percentile(bootstrap, [2.5, 97.5]).tolist(),
                 'valid_draws': len(bootstrap), 'without_dominant_source': float(mean_by_target[without].mean()) if without.any() else None,
                 'without_dominant_count': int(without.sum())}
+        reduced = [r for r in results if r['source'] != 'Nathans_Bylichka.txt']
+        reduced_groups = sorted({r['source'] for r in reduced})
+        sensitivity = {'targets': len(reduced), 'source_counts': dict(Counter(r['source'] for r in reduced)),
+                       'summary': {}, 'effects': {}}
+        if reduced:
+            reduced_indices = {group: np.flatnonzero([r['source'] == group for r in reduced]) for group in reduced_groups}
+            reduced_draws = np.random.default_rng(23140).integers(len(reduced_groups), size=(1000, len(reduced_groups)))
+            for name in names:
+                per_seed = [float(np.mean([r['seed_metrics'][str(seed)][name]['auc'] for r in reduced])) for seed in (17, 29, 43)]
+                ties = [float(np.mean([r['seed_metrics'][str(seed)][name]['tie_fraction'] for r in reduced])) for seed in (17, 29, 43)]
+                spreads = [float(np.mean([r['seed_metrics'][str(seed)][name]['score_spread'] for r in reduced])) for seed in (17, 29, 43)]
+                sensitivity['summary'][name] = {'per_seed': per_seed, 'mean': float(np.mean(per_seed)),
+                                                'tie_fraction_per_seed': ties, 'score_spread_per_seed': spreads}
+            for comparator in ('vector_contextual', 'ising_target'):
+                differences = np.asarray([[r['seed_metrics'][str(seed)]['ising_affinity']['auc'] -
+                                           r['seed_metrics'][str(seed)][comparator]['auc'] for r in reduced]
+                                          for seed in (17, 29, 43)])
+                pooled = differences.mean(axis=0)
+                boot = [float(pooled[np.concatenate([reduced_indices[reduced_groups[i]] for i in draw])].mean())
+                        for draw in reduced_draws]
+                sensitivity['effects'][comparator] = {'mean_difference': float(pooled.mean()),
+                    'per_seed': differences.mean(axis=1).tolist(), 'ci95': np.percentile(boot, [2.5, 97.5]).tolist(),
+                    'valid_draws': len(boot)}
         diagnostics = {'mean_candidate_entropy': float(np.mean([r['entropy'][str(seed)]['candidate_mean'] for r in results for seed in (17,29,43)])),
                        'mean_target_posterior_entropy': float(np.mean([r['entropy'][str(seed)]['target_posterior'] for r in results for seed in (17,29,43)])),
                        'mean_rank_change_fraction': float(np.mean([r['seed_metrics'][str(seed)]['ising_context_rank_change_fraction'] for r in results for seed in (17,29,43)]))}
-        output = {'manifest_sha256': digest, 'eligible_targets': len(manifest), 'informative_targets': len(results),
+        output = {'manifest_sha256': digest, 'total_targets': len(data['targets']),
+                  'eligible_targets': len(manifest), 'eligible_candidate_ids': sum(len(r['candidate_ids']) for r in manifest),
+                  'exclusions': exclusions, 'informative_targets': len(results),
                   'no_contrast_targets': no_contrast, 'candidate_entries_no_votes': no_votes,
                   'sources': len(groups), 'source_counts': dict(Counter(r['source'] for r in results)),
-                  'summary': summary, 'effects': effects, 'diagnostics': diagnostics, 'scoring_seconds': scoring_seconds,
+                  'summary': summary, 'effects': effects, 'without_dominant_source': sensitivity,
+                  'diagnostics': diagnostics, 'scoring_seconds': scoring_seconds,
                   'limitations': 'SWORDS development, filtered candidate vocabulary, repeated model selection, external-candidate host scores, no Gaussian or chip'}
         log_contract(mlflow, RunContract('classical', 'cpu_gpu_simulator', 'swords_external_candidate_ranking',
             'exact posterior/candidate affinity, kernel and vector controls', '4 spins or tied 10D vector', 'Ising beta=1',
@@ -217,6 +247,7 @@ def main():
             'SWORDS development, official test unopened', '4*(1+m) active spins, m=1..4', output['limitations']), output)
         mlflow.log_dict(output, 'summary.json')
         mlflow.log_dict(results, 'target_results.json')
+        mlflow.log_dict(votes_by_target, 'candidate_vote_counts.json')
         for name in names:
             mlflow.log_metric(name+'.target_macro_auc', summary[name]['mean'])
         print('RUN', run.info.run_id, json.dumps(output), flush=True)
